@@ -26,6 +26,7 @@ int main()
 			break;
 
 		case 'm':
+			MiningWizard();
 			break;
 		}
 	}

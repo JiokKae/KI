@@ -56,5 +56,8 @@
     <ClInclude Include="Ore.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
+    <ClInclude Include="Inventory.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
