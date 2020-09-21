@@ -11,6 +11,20 @@ using namespace std;
 #define SHOP 2
 #define MONSTER 3
 
+struct Vector2Int
+{
+	int x, y;
+};
+
+struct Hero
+{
+	string name;
+	int maxHP;
+	int HP;
+	int gold;
+	Vector2Int coord;
+};
+
 int main()
 {
 	// 영웅은 절차적!
@@ -30,17 +44,14 @@ int main()
 	*/
 
 	// hero
-	string name;
-	int maxHp;
-	int hp;
-	int gold = 0;
+	Hero hero;
+	hero.gold = 0;
 	int heroAttack;
 	int heroAct, shopAct;
-	int hx, hy;
 	int gotGold = 0;
 
 	// shop
-	int sx, sy;
+	Vector2Int shopCoord;
 
 	// option
 	int difficulty = 0;
@@ -60,7 +71,7 @@ int main()
 
 	cout << "GAME : 영웅은 절차적 실행" << endl;
 	cout << "영웅의 이름을 입력하시오 : " << endl;
-	cin >> name;
+	cin >> hero.name;
 
 	while (difficulty < 1 || difficulty > 5)
 	{
@@ -75,7 +86,7 @@ int main()
 	}
 
 	//setting 
-	maxHp = hp = 5 + difficulty / 2;
+	hero.maxHP = hero.HP = 5 + difficulty / 2;
 	numOfMonster = 3 + difficulty * difficulty;
 	
 	for (int i = 0; i < MAP_SIZE_Y; i++)
@@ -83,9 +94,9 @@ int main()
 			map[i][j] = GROUND;
 	
 	srand(time(NULL));
-	sx = rand() % MAP_SIZE_X;
-	sy = rand() % MAP_SIZE_Y;
-	map[sy][sx] = SHOP;
+	shopCoord.x = rand() % MAP_SIZE_X;
+	shopCoord.y = rand() % MAP_SIZE_Y;
+	map[shopCoord.y][shopCoord.x] = SHOP;
 
 	// 몬스터 랜덤 배치
 	for (int i = 0; i < numOfMonster; i++)
@@ -98,13 +109,13 @@ int main()
 			i--;
 	}
 
-	hx = rand() % MAP_SIZE_X;
-	hy = rand() % MAP_SIZE_Y;
+	hero.coord.x = rand() % MAP_SIZE_X;
+	hero.coord.y = rand() % MAP_SIZE_Y;
 
 	do
 	{
 		// 사망 검사
-		if (hp == 0 || numOfMonster == 0)
+		if (hero.HP == 0 || numOfMonster == 0)
 			break;
 
 		system("cls");
@@ -113,7 +124,7 @@ int main()
 		{
 			for (int j = 0; j < MAP_SIZE_X; j++)
 			{
-				if (hx == j && hy == i)
+				if (hero.coord.x == j && hero.coord.y == i)
 					cout << 'H';
 				else if (map[i][j] == SHOP)
 					cout << 'S';
@@ -127,7 +138,7 @@ int main()
 		}
 		cout << endl;
 		cout << "-----------------------------------------------------------" << endl;
-		cout << name << " 용사의 HP : " << hp << "/" << maxHp << " 용사의 소지 골드 : " << gold << endl;
+		cout << hero.name << " 용사의 HP : " << hero.HP << "/" << hero.maxHP << " 용사의 소지 골드 : " << hero.gold << endl;
 		cout << " 던전에 남은 적 : " << numOfMonster << "마리" << endl;
 		cout << "(H)용사 (M)몬스터 (S)상점 " << endl;
 		cout << "-----------------------------------------------------------" << endl;
@@ -153,23 +164,23 @@ int main()
 		{
 		case 'w':
 		case 'W':
-			if (hy > 0)
-				hy--;
+			if (hero.coord.y > 0)
+				hero.coord.y--;
 			break;
 		case 'a':
 		case 'A':
-			if (hx > 0)
-				hx--;
+			if (hero.coord.x > 0)
+				hero.coord.x--;
 			break;
 		case 's':
 		case 'S':
-			if (hy < MAP_SIZE_Y - 1 )
-				hy++;
+			if (hero.coord.y < MAP_SIZE_Y - 1 )
+				hero.coord.y++;
 			break;
 		case 'd':
 		case 'D':
-			if (hx < MAP_SIZE_X - 1)
-				hx++;
+			if (hero.coord.x < MAP_SIZE_X - 1)
+				hero.coord.x++;
 			break;
 
 		default:
@@ -179,24 +190,24 @@ int main()
 			break;
 		}
 		//Enter Shop
-		if (sx == hx && sy == hy)
+		if (shopCoord.x == hero.coord.x && shopCoord.y == hero.coord.y)
 		{
 			while (!outShop)
 			{
 				cout << "-----------------------------------------------------------" << endl;
-				cout << " 용사의 HP : " << hp << "/" << maxHp << " 용사의 소지 골드 : " << gold << endl;
+				cout << " 용사의 HP : " << hero.HP << "/" << hero.maxHP << " 용사의 소지 골드 : " << hero.gold << endl;
 				cout << "(1) 3HP 회복 100Gold (2) 완전 회복 250Gold (3) 나가기" << endl;
 				cout << "-----------------------------------------------------------" << endl;
 				cin >> shopAct;
 				switch (shopAct)
 				{
 				case 1:
-					if (gold > 100)
+					if (hero.gold > 100)
 					{
-						gold -= 100;
-						hp += 3;
-						if (hp > maxHp)
-							hp = maxHp;
+						hero.gold -= 100;
+						hero.HP += 3;
+						if (hero.HP > hero.maxHP)
+							hero.HP = hero.maxHP;
 						cout << "<체력을 3 회복했습니다>" << endl << endl;
 					}
 					else
@@ -204,10 +215,10 @@ int main()
 					break;
 
 				case 2:
-					if (gold > 250)
+					if (hero.gold > 250)
 					{
-						gold -= 250;
-						hp = maxHp;
+						hero.gold -= 250;
+						hero.HP = hero.maxHP;
 						cout << "<체력을 전부 회복했습니다>" << endl << endl;
 					}
 					else
@@ -226,16 +237,16 @@ int main()
 			switch (heroAct)
 			{
 			case 'w': case 'W':
-				hy++;
+				hero.coord.y++;
 				break;
 			case 'a': case 'A':
-				hx++;
+				hero.coord.x++;
 				break;
 			case 's': case 'S':
-				hy--;
+				hero.coord.y--;
 				break;
 			case 'd': case 'D':
-				hx--;
+				hero.coord.x--;
 				break;
 			}
 			outShop = false;
@@ -243,7 +254,7 @@ int main()
 		}
 		
 		// 전투
-		if (map[hy][hx] == MONSTER)
+		if (map[hero.coord.y][hero.coord.x] == MONSTER)
 		{
 			battleCount++;
 			cout << "몬스터와 조우했습니다! 전투 개시" << endl;
@@ -288,29 +299,29 @@ int main()
 				{
 					numOfMonster--;
 					gotGold = rand() % 100;
-					gold += gotGold;
-					map[hy][hx] = GROUND;
+					hero.gold += gotGold;
+					map[hero.coord.y][hero.coord.x] = GROUND;
 					winMSG = true;
 					battleEnd = true;
 					break;
 				}
 				// 패배 처리
 				case -1: case 2:
-					hp--;
+					hero.HP--;
 					// 히어로 위치 롤백
 					switch (heroAct)
 					{
 					case 'w': case 'W':
-							hy++;
+							hero.coord.y++;
 						break;
 					case 'a': case 'A':
-							hx++;
+							hero.coord.x++;
 						break;
 					case 's': case 'S':
-							hy--;
+							hero.coord.y--;
 						break;
 					case 'd': case 'D':
-							hx--;
+							hero.coord.x--;
 						break;
 					}
 					defeatMSG = true;
@@ -327,7 +338,7 @@ int main()
 		
 	} while (true);
 
-	if (hp == 0)
+	if (hero.HP == 0)
 	{
 		cout << "-----------------------------------------------------------" << endl;
 		cout << "당신은 게임에서 패배했습니다." << endl;
@@ -336,7 +347,7 @@ int main()
 			cout << "★";
 		cout << endl;
 		cout << "전투한 턴수 : " << battleCount << endl;
-		cout << "소지 골드 : " << gold << endl;
+		cout << "소지 골드 : " << hero.gold << endl;
 		cout << "-----------------------------------------------------------" << endl;
 	}
 	else
@@ -348,7 +359,7 @@ int main()
 			cout << "★";
 		cout << endl;
 		cout << "전투한 턴수 : " << battleCount << endl;
-		cout << "소지 골드 : " << gold << endl;
+		cout << "소지 골드 : " << hero.gold << endl;
 		cout << "-----------------------------------------------------------" << endl;
 	}
 
