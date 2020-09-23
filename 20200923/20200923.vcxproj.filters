@@ -18,5 +18,8 @@
     <ClCompile Include="20200923.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="25252.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
