@@ -49,28 +49,63 @@ Node* create_node(int data)
 	return new_node;
 }
 
-
+void delete_node(Node* node)
+{
+	node->data = 0;
+	node->pNext = nullptr;
+	delete node;
+}
 
 
 class LinkedList {
-	Node* head = NULL;
-public:
+	Node* head = nullptr;
+public: 
+
+	/*
+	~LinkedList() 
+	{
+		Node* p = head;
+		Node* next;
+		while (p->pNext != NULL) {
+			next = p->pNext;
+			
+
+		}
+			
+		while (p != head) {
+
+			delete p->pNext;
+		}
+			
+	}
+	*/
+	
+	void InsertNodeRecursive(int data)
+	{
+		InsertNodeRecursiveProcess(data, &head);
+	}
+
+	void InsertNodeRecursiveProcess(int data, Node** p)
+	{
+		if (*p == nullptr)
+			*p = create_node(data);
+		else if ((*p)->pNext == nullptr)
+			(*p)->pNext = create_node(data);
+		else
+			InsertNodeRecursiveProcess(data, &((*p)->pNext));
+	}
+
 	void insert_node(int data)
 	{
-		Node** head = &(this->head);
 		Node * node = create_node(data);
-		Node *p = *head;
-		if (*head == NULL)
-		{
-			*head = node;
-		}
-		else if ((*head)->pNext == NULL)
-		{
-			(*head)->pNext = node;
-		}
+		if (head == nullptr)
+			head = node;
+		else if (head->pNext == nullptr)
+			head->pNext = node;
 		else
 		{
-			while (p->pNext != NULL)
+			Node *p = head;
+			while (p->pNext != nullptr)
 			{
 				p = p->pNext;
 			}
@@ -327,7 +362,7 @@ int main()
 	//linked list
 
 	LinkedList list;
-
+	/*
 	list.insert_node(3);
 	list.insert_node(4);
 	list.insert_node(6);
@@ -335,7 +370,14 @@ int main()
 	list.insert_node(8);
 	list.insert_node(9);
 	list.insert_node(12);
-
+	*/	
+	list.InsertNodeRecursive(15);
+	list.InsertNodeRecursive(17);
+	list.InsertNodeRecursive(19);
+	list.InsertNodeRecursive(21);
+	list.InsertNodeRecursive(23);
+	
 	list.print_list();
+	return 0;
 
 }
