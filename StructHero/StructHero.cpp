@@ -5,398 +5,351 @@
 using namespace std;
 
 /*
+/////////////////////////////////////////////////////////////////////
+//
+//	게임 설명
+//
+/////////////////////////////////////////////////////////////////////
+
 순서도 먼저 그리자.
 영웅은 절차적 2: 영웅은 구조적
 
 가로*세로 사이즈 설정할 수 있도록 만들자. (동적할당)
+
 맵 크기에 따라 난이도 변경
 5*5 = 25 이하 난이도 1
 10*10 = 100 이하 난이도 2
 15 * 15 = 225 이하 난이도 3
+
 WASD 이동
+
 배열 / 구조체 / 함수를 최대한 활용해보자.
+
 전투는 가위바위보
-몬스터는 포켓몬스터처럼 랜덤 인카운터 방식 (타일 이동시 확률 적용)
+
+타일 : (Vector2Int) 좌표 / (int) 타입 / (char) 모양
 타일에 종류가 있다(숲 늪 땅) 마다 만나는 몬스터도 다르다.
-타일 : 타일 x좌표 y좌표, 타입, 모양
-플레이어 : 이름 / 최대 HP(레벨에 따라 증가) /HP 경험치 레벨 골드
-물약 : 이름 가격 회복치
-몬스터 : 이름 최대 HP HP 획득경험치 획득곻ㄺ드
-상점 : 아이템 종류
 
+플레이어 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 경험치 / (int) 레벨 / (int) 골드 / (Vector2Int) 좌표
 
-#define MAP_SIZE_X 40
-#define MAP_SIZE_Y 12
-#define GROUND 0
-#define WALL 1
-#define SHOP 2
-#define MONSTER 3
+포션 : (string) 이름 / (int) 가격 / (int) 회복치
 
+몬스터 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 획득 경험치 / (int) 획득 골드
+몬스터는 포켓몬스터처럼 랜덤 인카운터 방식 (타일 이동시 확률 적용)
+
+상점 : (Potion*) 아이템 종류
+*/
+
+/////////////////////////////////////////////////////////////////////
+//
+//	구조체
+//
+/////////////////////////////////////////////////////////////////////
+
+// 2차원 int 구조체
 struct Vector2Int
 {
 	int x, y;
 };
 
+// 타일 : (Vector2Int) 좌표 / (int) 타입 / (string) 모양
+struct Tile {
+	Vector2Int coord;
+	int type;
+	string shape;
+};
+
+// 주변 타일 구조체
+struct AroundTiles {
+	Tile** tiles;
+	int size;
+};
+
+// 플레이어 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 경험치 / (int) 레벨 / (int) 골드 / (Vector2Int) 좌표 
 struct Hero
 {
 	string name;
 	int maxHP;
 	int HP;
+	int exp;
+	int level;
 	int gold;
 	Vector2Int coord;
 };
 
-void PrintMessage(string msg)
-{
+// 포션 : (string) 이름 / (int) 가격 / (int) 회복치
+struct Potion {
+	string name;
+	int price;
+	int recoveryPoint;
+};
 
+// 몬스터 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 획득 경험치 / (int) 획득 골드
+struct Monster {
+	string name;
+	int MaxHP;
+	int HP;
+	int earnedExp;
+	int earnedGold;
+};
+
+// 상점 : (Potion*) 아이템 종류
+struct Shop {
+	Potion* potions;
+};
+
+/////////////////////////////////////////////////////////////////////
+//
+//	함수
+//
+/////////////////////////////////////////////////////////////////////
+
+// 게임의 로고를 출력하는 함수
+void PrintLogo()
+{
+	cout << "--------------------------------------" << endl;
+	cout << "                                      " << endl;
+	cout << "   영웅은 절차적 2 : 영웅은 구조적      " << endl;
+	cout << "                                      " << endl;
+	cout << "--------------------------------------" << endl;
 }
 
-void PrintMap(Hero hero, int **map)
+// 메세지를 출력하는 함수
+void PrintMSG(string msg)
 {
-	for (int i = 0; i < MAP_SIZE_Y; i++)
+	cout << " << " << msg << " >> " << endl;
+}
+
+AroundTiles GetAroundEightTiles(Tile** &map, Vector2Int coord, Vector2Int size)
+{
+	AroundTiles aroundtiles;
+	if (coord.x == 0)
 	{
-		for (int j = 0; j < MAP_SIZE_X; j++)
+		if (coord.y == 0)
 		{
-			if (hero.coord.x == j && hero.coord.y == i)
-				cout << 'H';
-			else if (map[i][j] == SHOP)
-				cout << 'S';
-			else if (map[i][j] == MONSTER)
-				cout << 'M';
-			else if (map[i][j] == GROUND)
-				cout << '_';
-
+			aroundtiles.tiles = new Tile*[3];
+			aroundtiles.tiles[0] = &map[coord.x + 1][coord.y + 1];
+			aroundtiles.tiles[1] = &map[coord.x + 1][coord.y];
+			aroundtiles.tiles[2] = &map[coord.x][coord.y + 1];
 		}
-		cout << endl;
-	}
-}
-
-void PrintGameEnd(Hero hero, int difficulty, int battleCount)
-{
-	cout << "-----------------------------------------------------------" << endl;
-	if (hero.HP == 0)
-	{
-		cout << "당신은 게임에서 패배했습니다." << endl;
-		cout << "패배한 난이도 : ";
-	}
-	else
-	{
-		cout << "당신은 게임에서 승리했습니다!" << endl;
-		cout << "클리어 난이도 : ";
-	}
-	for (int i = 0; i < difficulty; i++)
-		cout << "★";
-
-	cout << endl;
-	cout << "전투한 턴수 : " << battleCount << endl;
-	cout << "소지 골드 : " << hero.gold << endl;
-	cout << "-----------------------------------------------------------" << endl;
-}
-
-void Init(Hero *hero, int difficulty, int* numOfMonster, int** map, Vector2Int* shopCoord)
-{
-	hero->maxHP = hero->HP = 5 + difficulty / 2;
-	*numOfMonster = 3 + difficulty * difficulty;
-
-	for (int i = 0; i < MAP_SIZE_Y; i++)
-		for (int j = 0; j < MAP_SIZE_X; j++)
-			map[i][j] = GROUND;
-
-	srand(time(NULL));
-	shopCoord->x = rand() % MAP_SIZE_X;
-	shopCoord->y = rand() % MAP_SIZE_Y;
-	map[shopCoord->y][shopCoord->x] = SHOP;
-
-	// 몬스터 랜덤 배치
-	for (int i = 0; i < *numOfMonster; i++)
-	{
-		int x = rand() % MAP_SIZE_X;
-		int y = rand() % MAP_SIZE_Y;
-		if (map[y][x] == GROUND)
-			map[y][x] = MONSTER;
+		else if (coord.y == size.y - 1)
+		{
+			aroundtiles.tiles = new Tile*[3];
+			aroundtiles.tiles[0] = &map[coord.x + 1][coord.y - 1];
+			aroundtiles.tiles[1] = &map[coord.x + 1][coord.y];
+			aroundtiles.tiles[2] = &map[coord.x][coord.y - 1];
+		}
 		else
-			i--;
+		{
+			aroundtiles.tiles = new Tile*[5];
+			aroundtiles.tiles[0] = &map[coord.x + 1][coord.y - 1];
+			aroundtiles.tiles[1] = &map[coord.x][coord.y - 1];
+			aroundtiles.tiles[2] = &map[coord.x + 1][coord.y];
+			aroundtiles.tiles[3] = &map[coord.x + 1][coord.y + 1];
+			aroundtiles.tiles[4] = &map[coord.x][coord.y + 1];
+		}
 	}
+	else if(coord.x == size.x - 1)
+	{
+		if (coord.y == 0)
+		{
+			aroundtiles.tiles = new Tile*[3];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y + 1];
+			aroundtiles.tiles[1] = &map[coord.x][coord.y + 1];
+			aroundtiles.tiles[2] = &map[coord.x - 1][coord.y];
+		}
+		else if (coord.y == size.y - 1)
+		{
+			aroundtiles.tiles = new Tile*[3];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y - 1];
+			aroundtiles.tiles[1] = &map[coord.x][coord.y - 1];
+			aroundtiles.tiles[2] = &map[coord.x - 1][coord.y];
+		}
+		else
+		{
+			aroundtiles.tiles = new Tile*[5];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y + 1];
+			aroundtiles.tiles[1] = &map[coord.x][coord.y + 1];
+			aroundtiles.tiles[2] = &map[coord.x - 1][coord.y];
+			aroundtiles.tiles[3] = &map[coord.x - 1][coord.y - 1];
+			aroundtiles.tiles[4] = &map[coord.x][coord.y - 1];
+		}
+	}
+	else 
+	{
+		if (coord.y == 0)
+		{
+			aroundtiles.tiles = new Tile*[5];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y];
+			aroundtiles.tiles[1] = &map[coord.x - 1][coord.y + 1];
+			aroundtiles.tiles[2] = &map[coord.x][coord.y + 1];
+			aroundtiles.tiles[3] = &map[coord.x + 1][coord.y + 1];
+			aroundtiles.tiles[4] = &map[coord.x + 1][coord.y];
 
-	hero->coord.x = rand() % MAP_SIZE_X;
-	hero->coord.y = rand() % MAP_SIZE_Y;
+		}
+		else if (coord.y == size.y - 1)
+		{
+			aroundtiles.tiles = new Tile*[5];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y];
+			aroundtiles.tiles[1] = &map[coord.x - 1][coord.y - 1];
+			aroundtiles.tiles[2] = &map[coord.x][coord.y - 1];
+			aroundtiles.tiles[3] = &map[coord.x + 1][coord.y - 1];
+			aroundtiles.tiles[4] = &map[coord.x + 1][coord.y];
+		}
+		else
+		{
+			aroundtiles.tiles = new Tile*[8];
+			aroundtiles.tiles[0] = &map[coord.x - 1][coord.y];
+			aroundtiles.tiles[1] = &map[coord.x - 1][coord.y - 1];
+			aroundtiles.tiles[2] = &map[coord.x][coord.y - 1];
+			aroundtiles.tiles[3] = &map[coord.x + 1][coord.y - 1];
+			aroundtiles.tiles[4] = &map[coord.x + 1][coord.y];
+			aroundtiles.tiles[5] = &map[coord.x - 1][coord.y + 1];
+			aroundtiles.tiles[6] = &map[coord.x][coord.y + 1];
+			aroundtiles.tiles[7] = &map[coord.x + 1][coord.y + 1];
+		}
+	}
+	aroundtiles.size = sizeof(aroundtiles.tiles) / sizeof(Tile*);
+	cout << aroundtiles.size << endl;
+	return aroundtiles;
 }
 
-int main()
+// 주변 타일에 의해 타일이 결정되는 함수
+void DecideTile(Tile** map, Vector2Int coord) {
+
+}
+
+// 맵을 생성하는 함수 (동적할당 사용)
+void CreateMap(Tile** &map, Vector2Int size) 
 {
-	// 영웅은 절차적!
-	/*
-	1. 텍스트로 진행되는 게임
-		2. 게임이 시작되면 영웅의 이름과 난이도를 입력받는다.
-		3. 입력된 난이도에 따라서 영웅의 HP / 만나게 되는 몬스터의 숫자가 변동
-		4. 게임이 시작되면 마지막 몬스터를 잡을 때까지 전투가 진행되는 방식
-		5. 몬스터를 잡으면 랜덤하게 돈을 획득한다. (0 ~100)
-		6. 몬스터를 잡으면 던전을 계속 탐험할 지 상점을 들를지 결정한다.
-		7. 상점을 들르면 돈을 소모해서 HP를 회복할 수 있다.
-		8. 전투는 가위바위보로 이루어진다. (비기면 승패가 정해질 때까지 반복, 지면 HP가 소모(몬스터는 한번지면 사망))
-		9. 몬스터를 다 잡으면 클리어 / HP가 0이 되면 게임오버
-		10. 클리어 시 엔딩멘트 출력
-		11. 종료
-
-	*/
-
-	// hero
-	Hero hero;
-	hero.gold = 0;
-	int heroAttack;
-	int heroAct, shopAct;
-	int gotGold = 0;
-
-	// shop
-	Vector2Int shopCoord;
-
-	// option
-	int difficulty = 0;
-	bool battleEnd = false;
-	bool outShop = false;
-	bool defeatMSG = false;
-	bool winMSG = false;
-	int battleCount = 0;
-
-	// monster
-	int numOfMonster;
-	int monAttack;
-
-	// map	
-	int **map = new int*[MAP_SIZE_Y];
-	for (int i = 0; i < MAP_SIZE_Y; i++)
-		map[i] = new int[MAP_SIZE_X];
-
-	cout << "GAME : 영웅은 절차적 실행" << endl;
-	cout << "영웅의 이름을 입력하시오 : " << endl;
-	cin >> hero.name;
-
-	while (difficulty < 1 || difficulty > 5)
+	map = new Tile*[size.y];
+	for (int i = 0; i < size.y; i++) 
 	{
-		cout << "게임의 난이도 입력 ★(1) ★★(2) ★★★(3) ★★★★(4) ★★★★★(5)" << endl;
-		cin >> difficulty;
-		if (cin.fail() || difficulty < 1 || difficulty > 5)
+		map[i] = new Tile[size.x];
+		for (int j = 0; j < size.y; j++)
 		{
-			cin.clear();
-			cin.ignore(256, '\n');
-			cout << "Error : 잘못된 입력" << endl;
+			//map[i][j].;
 		}
 	}
+}
 
-	//setting 
-	Init(&hero, difficulty, &numOfMonster, map, &shopCoord);
-
-	do
-	{
-		// 사망 검사
-		if (hero.HP == 0 || numOfMonster == 0)
-			break;
-
-		system("cls");
-		PrintMap(hero, map);
-		// 행동
-		cout << endl;
-		cout << "-----------------------------------------------------------" << endl;
-		cout << hero.name << " 용사의 HP : " << hero.HP << "/" << hero.maxHP << " 용사의 소지 골드 : " << hero.gold << endl;
-		cout << " 던전에 남은 적 : " << numOfMonster << "마리" << endl;
-		cout << "(H)용사 (M)몬스터 (S)상점 " << endl;
-		cout << "-----------------------------------------------------------" << endl;
-
-		if (winMSG)
-		{
-			cout << "-----------------------------" << endl;
-			cout << "승리했습니다!" << endl;
-			cout << "몬스터 처치! " << gotGold << "골드 획득!! " << endl;
-			cout << "-----------------------------" << endl;
-			winMSG = false;
-		}
-		else if (defeatMSG)
-		{
-			cout << "-----------------------------" << endl;
-			cout << "패배했습니다! HP 1 감소!" << endl;
-			cout << "-----------------------------" << endl;
-			defeatMSG = false;
-		}
-
-		heroAct = _getch();
-		switch (heroAct)
-		{
-		case 'w': case 'W':
-			if (hero.coord.y > 0)
-				hero.coord.y--;
-			break;
-		case 'a': case 'A':
-			if (hero.coord.x > 0)
-				hero.coord.x--;
-			break;
-		case 's': case 'S':
-			if (hero.coord.y < MAP_SIZE_Y - 1)
-				hero.coord.y++;
-			break;
-		case 'd': case 'D':
-			if (hero.coord.x < MAP_SIZE_X - 1)
-				hero.coord.x++;
-			break;
-
-		default:
-			cout << "Error : 잘못된 입력" << endl;
-			cin.clear();
-			cin.ignore(256, '\n');
-			break;
-		}
-		//Enter Shop
-		if (shopCoord.x == hero.coord.x && shopCoord.y == hero.coord.y)
-		{
-			while (!outShop)
-			{
-				cout << "-----------------------------------------------------------" << endl;
-				cout << " 용사의 HP : " << hero.HP << "/" << hero.maxHP << " 용사의 소지 골드 : " << hero.gold << endl;
-				cout << "(1) 3HP 회복 100Gold (2) 완전 회복 250Gold (3) 나가기" << endl;
-				cout << "-----------------------------------------------------------" << endl;
-				cin >> shopAct;
-				switch (shopAct)
-				{
-				case 1:
-					if (hero.gold > 100)
-					{
-						hero.gold -= 100;
-						hero.HP += 3;
-						if (hero.HP > hero.maxHP)
-							hero.HP = hero.maxHP;
-						cout << "<체력을 3 회복했습니다>" << endl << endl;
-					}
-					else
-						cout << "<골드가 부족합니다>" << endl << endl;
-					break;
-
-				case 2:
-					if (hero.gold > 250)
-					{
-						hero.gold -= 250;
-						hero.HP = hero.maxHP;
-						cout << "<체력을 전부 회복했습니다>" << endl << endl;
-					}
-					else
-						cout << "<골드가 부족합니다>" << endl << endl;
-					break;
-
-				case 3:
-					outShop = true;
-					break;
-				default:
-					cout << "Error : 잘못된 입력" << endl;
-					cin.clear();
-					cin.ignore(256, '\n');
-					break;
-				}
-			}
-			// 히어로 위치 롤백
-			switch (heroAct)
-			{
-			case 'w': case 'W':
-				hero.coord.y++;
-				break;
-			case 'a': case 'A':
-				hero.coord.x++;
-				break;
-			case 's': case 'S':
-				hero.coord.y--;
-				break;
-			case 'd': case 'D':
-				hero.coord.x--;
-				break;
-			}
-			outShop = false;
-			battleEnd = false;
-		}
-
-		// 전투
-		if (map[hero.coord.y][hero.coord.x] == MONSTER)
-		{
-			battleCount++;
-			cout << "몬스터와 조우했습니다! 전투 개시" << endl;
-
-			while (!battleEnd)
-			{
-				srand(time(NULL));
-				monAttack = rand() % 3;
-
-				cout << "<공격 선택> 0(가위), 1(바위), 2(보) : ";
-				cin >> heroAttack;
-				if (heroAttack > 2 || heroAttack < 0 || cin.fail())
-				{
-					cin.clear();
-					cin.ignore(256, '\n');
-					cout << "Error : 잘못된 입력" << endl;
-					continue;
-				}
-				cout << "몬스터의 공격 : ";
-				switch (monAttack)
-				{
-				case 0:
-					cout << "가위" << endl;
-					break;
-				case 1:
-					cout << "바위" << endl;
-					break;
-				case 2:
-					cout << "보" << endl;
-					break;
-				}
-
-				int offset = heroAttack - monAttack;
-				switch (offset)
-				{
-				case 0:
-					cout << "무승부! 다시!" << endl << endl;
-					break;
-
-					// 승리 처리
-				case 1: case -2:
-				{
-					numOfMonster--;
-					gotGold = rand() % 100;
-					hero.gold += gotGold;
-					map[hero.coord.y][hero.coord.x] = GROUND;
-					winMSG = true;
-					battleEnd = true;
-					break;
-				}
-				// 패배 처리
-				case -1: case 2:
-					hero.HP--;
-					// 히어로 위치 롤백
-					switch (heroAct)
-					{
-					case 'w': case 'W':
-						hero.coord.y++;
-						break;
-					case 'a': case 'A':
-						hero.coord.x++;
-						break;
-					case 's': case 'S':
-						hero.coord.y--;
-						break;
-					case 'd': case 'D':
-						hero.coord.x--;
-						break;
-					}
-					defeatMSG = true;
-					battleEnd = true;
-					break;
-
-				default:
-					//cout << "잘못된 입력" << endl;
-					break;
-				}
-			}
-			battleEnd = false;
-		}
-
-	} while (true);
-	PrintGameEnd(hero, difficulty, battleCount);
-
-	for (int i = 0; i < MAP_SIZE_Y; i++)
+// 맵을 삭제하는 함수 (동적할당 해제)
+void DeleteMap(Tile** map, Vector2Int size)
+{
+	for (int i = 0; i < size.y; i++)
 		delete[] map[i];
 	delete[] map;
 }
+
+// 맵 크기에 따른 난이도 설정 함수
+int SizeToDifficulty(Vector2Int size)
+{
+	int area = size.x * size.y;
+	if (area <= 25)
+		return 1;
+	else if (area <= 100)
+		return 2;
+	else
+		return 3;
+}
+
+// 난이도를 별문자열로 바꿔주는 함수
+string DifficultyToStar(int difficulty)
+{
+	string stars = "";
+	for (int i = 0; i < difficulty; i++)
+		stars += "★";
+
+	return stars;
+}
+
+/////////////////////////////////////////////////////////////////////
+//
+//	메인 함수
+//
+/////////////////////////////////////////////////////////////////////
+
+int main()
+{
+	Tile Grass = { {}, 0, "▤" };
+	Tile Mud = { {}, 1, "~~" };
+	Tile Forest = { {}, 2, "♧" };
+
+	// 변수 선언
+	Hero hero;				// 용사 구조체
+	Tile** map = nullptr;	// 타일 구조체
+	Vector2Int mapSize;		// 맵의 크기
+	int difficulty;			// 난이도
+	int numOfMonster;		// 몬스터의 수
+
+	// 로고 출력
+	PrintLogo();
+
+	// 용사 이름 설정
+	PrintMSG("용사의 이름을 입력하세요");
+	cin >> hero.name;
+	
+	// 맵의 크기 설정
+	PrintMSG("맵의 크기를 지정해 주세요 ex) 10 10");
+	cin >> mapSize.x >> mapSize.y;
+	difficulty = SizeToDifficulty(mapSize);
+	
+	// 맵 생성 (동적할당)
+	CreateMap(map, mapSize);
+
+	// 게임 초기화
+	hero.maxHP = hero.HP = 5 + difficulty / 2;
+	hero.level = 1;
+	hero.gold = 0;
+	hero.exp = 0;
+
+	numOfMonster = 10 + difficulty * difficulty;
+
+	// 알림
+	string msg = "맵의 크기 : " + to_string(mapSize.x) + 'x' + to_string(mapSize.y) + "\t난이도 : " + DifficultyToStar(difficulty);
+	PrintMSG(msg);
+
+	GetAroundEightTiles(map, {}, mapSize);
+	
+	// 맵 삭제 (동적할당 해제)
+	DeleteMap(map, mapSize);
+
+	return 0;
+}
+
+/////////////////////////////////////////////////////////////////////
+//
+//	자료 구조
+//
+/////////////////////////////////////////////////////////////////////
+
+struct Data {
+	Tile* tileRef;
+};
+
+struct Node {
+	Data data;
+	Node* next = nullptr;
+};
+
+struct LinkedList
+{
+	Node* head = nullptr;
+	int size = 0;
+
+	Node* CreateNode(Data data)
+	{
+		Node* newNode = new Node;
+		newNode->data = data;
+		newNode->next = nullptr;
+		return newNode;
+	}
+
+	void InsertNode(Data data)
+	{
+		if (head == nullptr)
+		{
+
+		}
+	}
+};
