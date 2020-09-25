@@ -90,9 +90,10 @@ struct Monster {
 	int earnedGold;
 };
 
-// 상점 : (Potion*) 아이템 종류 / (Vector2Int) 좌표 / (string) 지붕 모양 / (string) 모양
+// 상점 : (Potion*) 아이템 종류 / (int) 아이템 개수 / (Vector2Int) 좌표 / (string) 지붕 모양 / (string) 모양
 struct Shop {
 	Potion* potions;
+	int length;
 	Vector2Int coord;
 	string roofShape;
 	string shape;
@@ -110,6 +111,7 @@ struct GameSetting {
 /////////////////////////////////////////////////////////////////////
 
 GameSetting gameSetting;	// 전역 변수::게임 세팅
+Tile** map = nullptr;		// 전역 변수::타일 맵
 Hero hero;					// 전역 변수::용사
 
 /////////////////////////////////////////////////////////////////////
@@ -134,14 +136,10 @@ string IntToCharString(int num, string ch)
 	return str;
 }
 
-// 문자와 입력된 길이의 문자열로 반환하는 함수
-string IntToCharSting(int num, string ch2, string ch1) {
-	string str = "";
-	for (int i = 0; i < num - 1; i+=2)
-		str += ch2;
-	if (num % 2 == 1)
-		str += ch1;
-	return str;
+// 용사의 체력을 문자열로 반환하는 함수
+string PrintHP()
+{
+	return IntToCharString(hero.HP, "♥") + IntToCharString(hero.maxHP - hero.HP, "♡");
 }
 
 // 게임의 로고를 출력하는 함수
@@ -164,13 +162,14 @@ void PrintMSG(string msg)
 void PrintTopbar() 
 {
 	printf("===================================================\n");
+	printf("체력\t=%s=\n", PrintHP().c_str());
 	printf("%s 용사\t레벨 : %d\t골드 : %d\n", hero.name.c_str(), hero.level, hero.gold);
 	printf("난이도 : %s\t남은 몬스터 수 : %d\n", IntToCharString(gameSetting.difficulty, "★").c_str(), gameSetting.numOfMonster);
 	printf("===================================================\n");
 }
 
 // 주변 타일을 받아오는 함수
-Tile** GetAroundEightTiles(Tile** &map, Vector2Int coord, Vector2Int size)
+Tile** GetAroundEightTiles(Vector2Int coord, Vector2Int size)
 {
 	Tile* aroundTiles[8];
 	if (coord.x == 0 || coord.y == 0 || coord.x == size.x + 1 || size.y + 1)
@@ -189,7 +188,7 @@ Tile** GetAroundEightTiles(Tile** &map, Vector2Int coord, Vector2Int size)
 }
 
 // 맵의 타일을 결정해주는 함수
-Tile DecideTile(Tile** map, Vector2Int coord, Vector2Int mapSize, int power) 
+Tile DecideTile(Vector2Int coord, Vector2Int mapSize, int power) 
 {
 	Tile Wall = { {}, 0, 0, true, "  " };
 	Tile Grass = { {}, 1, 10, true, "▤" };
@@ -211,7 +210,7 @@ Tile DecideTile(Tile** map, Vector2Int coord, Vector2Int mapSize, int power)
 }
 
 // 맵을 생성하는 함수 (동적할당 사용)
-void CreateMap(Tile** &map, Vector2Int size) 
+void CreateMap(Vector2Int size) 
 {
 	map = new Tile*[size.y + 2];
 	for (int y = 0; y < size.y + 2; y++) 
@@ -219,13 +218,13 @@ void CreateMap(Tile** &map, Vector2Int size)
 		map[y] = new Tile[size.x + 2];
 		for (int x = 0; x < size.x + 2; x++)
 		{
-			map[y][x] = DecideTile(map, { y, x }, size, 0);
+			map[y][x] = DecideTile({ y, x }, size, 0);
 		}
 	}
 }
 
 // 맵을 출력하는 함수
-void PrintMap(Tile** map, Vector2Int size, Shop shop)
+void PrintMap(Vector2Int size, Shop shop)
 {
 	for (int y = 0; y < size.y + 1; y++)
 	{
@@ -245,7 +244,7 @@ void PrintMap(Tile** map, Vector2Int size, Shop shop)
 }
 
 // 맵을 삭제하는 함수 (동적할당 해제)
-void DeleteMap(Tile** map, Vector2Int size)
+void DeleteMap(Vector2Int size)
 {
 	for (int i = 0; i < size.y; i++)
 		delete[] map[i];
@@ -256,12 +255,12 @@ void DeleteMap(Tile** map, Vector2Int size)
 int SizeToDifficulty(Vector2Int size)
 {
 	int area = size.x * size.y;
-	if (area <= 25)
-		return 1;
-	else if (area <= 100)
-		return 2;
-	else
-		return 3;
+
+	int difficulty = 1;
+	while (area > pow(5 * difficulty, 2))
+		difficulty++;
+
+	return difficulty;
 }
 
 // 용사의 움직임 함수
@@ -301,23 +300,63 @@ int HeroMove(char input, Vector2Int mapSize)
 	return noise;
 }
 
-void PrintShopUI()
+// 상점 초기화 함수
+void InitShop(Shop &shop , Vector2Int mapSize)
 {
-	cout << "-----------------------------------------------------------" << endl;
-	cout << " 용사의 HP : " << hero.HP << "/" << hero.maxHP << endl;
+	shop.length = 4;
+	shop.potions = new Potion[shop.length];
+	shop.potions[0] = { "힐링포션", 50, 1 };
+	shop.potions[1] = { "대량의 힐링포션", 100, 3 };
+	shop.potions[2] = { "활력포션", 150, 5 };
+	shop.potions[3] = { "대량의 활력포션", 200, 7 };
+	shop.roofShape = "△";
+	shop.shape = "▣";
+	shop.coord.x = RandomInRange(1, mapSize.x);
+	shop.coord.y = RandomInRange(1, mapSize.x);
+	map[shop.coord.y][shop.coord.x].passable = false;
+}
+
+// 상점 UI 출력 함수
+void PrintShopUI(Shop &shop)
+{
+	cout << "┌" << IntToCharString(shop.length * 18 - 1, "─") << "┐" << endl;
+	for (int i = 0; i < 3; i++)
+	{
+		cout << "│";
+		for (int j = 0; j < shop.length; j++)
+		{
+			switch (i)
+			{
+			case 0:
+				printf("%16s │", shop.potions[j].name.c_str());
+				break;
+			case 1:
+				printf("%16d │", shop.potions[j].price);
+				break;
+			case 2:
+				printf("%16s │",  IntToCharString(shop.potions[j].recoveryPoint, "♥").c_str());
+				break;
+			default:
+				break;
+			}
+			
+		}
+		cout << endl;
+	}
+	cout << "└" << IntToCharString(shop.length * 18 - 1, "─") << "┘" << endl;
 	cout << "(1) 3HP 회복 100Gold (2) 완전 회복 250Gold (3) 나가기" << endl;
-	cout << "-----------------------------------------------------------" << endl;
 }
 
 // 상점의 처리 함수
-void ShopProcess() 
+void ShopProcess(Shop &shop) 
 {
 	int shopAct;
 	bool outShop = false;
 	while (!outShop)
 	{
+		system("cls");
 		PrintTopbar();
-		PrintShopUI();
+		PrintShopUI(shop);
 		cin >> shopAct;
 		switch (shopAct)
 		{
@@ -366,7 +405,7 @@ void TileProcess(Tile tile, int noise, char heroAct, Shop shop)
 	if (shop.coord.x == tile.coord.x && shop.coord.y == tile.coord.y)
 	{
 		// 상점 처리
-		ShopProcess();
+		ShopProcess(shop);
 	}
 	else 
 	{
@@ -408,26 +447,29 @@ void TileProcess(Tile tile, int noise, char heroAct, Shop shop)
 int main()
 {
 	// 변수 선언
-	Tile** map = nullptr;	// 타일 구조체
+	
 	Vector2Int mapSize;		// 맵의 크기
 	
 	Shop shop;				// 상점
-
+	
 	// 로고 출력
 	PrintLogo();
-
 	// 용사 이름 설정
 	PrintMSG("용사의 이름을 입력하세요");
 	cin >> hero.name;
 	hero.shape = hero.name.substr(0, 2);
-	
 	// 맵의 크기 설정
-	PrintMSG("맵의 크기를 지정해 주세요 ex) 10 10");
-	cin >> mapSize.x >> mapSize.y;
+	do {
+		cin.clear();
+		cin.ignore(256, '\n');
+		PrintMSG("맵의 크기를 지정해 주세요 ex) 10 10");
+		cin >> mapSize.x >> mapSize.y;
+
+	} while (cin.fail() || mapSize.x < 10);
 	gameSetting.difficulty = SizeToDifficulty(mapSize);
 	
 	// 맵 생성 (동적할당)
-	CreateMap(map, mapSize);
+	CreateMap(mapSize);
 
 	// 게임 초기화
 	srand(time(NULL));
@@ -437,12 +479,8 @@ int main()
 	hero.exp = 0;
 	hero.coord.x = RandomInRange(1, mapSize.x);
 	hero.coord.y = RandomInRange(1, mapSize.y);
-	shop.roofShape = "△";
-	shop.shape = "▣";
-	shop.coord.x = RandomInRange(1, mapSize.x);
-	shop.coord.y = RandomInRange(1, mapSize.x);
-	map[shop.coord.y][shop.coord.x].passable = false;
-
+	
+	InitShop(shop, mapSize);
 
 	gameSetting.numOfMonster = 10 + gameSetting.difficulty * gameSetting.difficulty;
 
@@ -456,14 +494,17 @@ int main()
 	{
 		system("cls");
 		PrintTopbar();
-		PrintMap(map, mapSize, shop);
+		PrintMap(mapSize, shop);
 		char heroAct = _getch();
 		int noise = HeroMove(heroAct, mapSize);
 		TileProcess(map[hero.coord.y][hero.coord.x], noise, heroAct, shop);
 	}
 
+	// 상점 삭제 (동적할당 해제
+	delete[] shop.potions;
+
 	// 맵 삭제 (동적할당 해제)
-	DeleteMap(map, mapSize);
+	DeleteMap(mapSize);
 
 	return 0;
 }
