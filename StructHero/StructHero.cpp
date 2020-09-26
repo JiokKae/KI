@@ -4,6 +4,10 @@
 #include <conio.h>
 using namespace std;
 
+#define GRASS	1
+#define MUD		2
+#define FOREST	3
+
 /*
 /////////////////////////////////////////////////////////////////////
 //
@@ -161,11 +165,17 @@ void PrintMSG(string msg)
 // 상단 바 출력하는 함수
 void PrintTopbar() 
 {
-	printf("===================================================\n");
+	printf("==================================================================\n");
 	printf("체력\t=%s=\n", PrintHP().c_str());
-	printf("%s 용사\t레벨 : %d\t골드 : %d\n", hero.name.c_str(), hero.level, hero.gold);
+	printf("[%s 용사]\t레벨 : %d (%d / 100)\t골드 : %d\n", hero.name.c_str(), hero.level, hero.exp, hero.gold);
 	printf("난이도 : %s\t남은 몬스터 수 : %d\n", IntToCharString(gameSetting.difficulty, "★").c_str(), gameSetting.numOfMonster);
-	printf("===================================================\n");
+	printf("==================================================================\n");
+}
+
+void GetEnter()
+{
+	getchar();
+	fflush(stdin);
 }
 
 // 주변 타일을 받아오는 함수
@@ -191,9 +201,9 @@ Tile** GetAroundEightTiles(Vector2Int coord, Vector2Int size)
 Tile DecideTile(Vector2Int coord, Vector2Int mapSize, int power) 
 {
 	Tile Wall = { {}, 0, 0, true, "  " };
-	Tile Grass = { {}, 1, 10, true, "▤" };
-	Tile Mud = { {}, 2, 30,true, "~~" };
-	Tile Forest = { {}, 3, 20, true, "♧" };
+	Tile Grass = { {}, GRASS, 10, true, "▤" };
+	Tile Mud = { {}, MUD, 30,true, "~~" };
+	Tile Forest = { {}, FOREST, 20, true, "♧" };
 	Tile newTile = Grass;
 	if (coord.x == 0 || coord.y == 0 || coord.x == mapSize.x + 1 || coord.y == mapSize.y + 1)
 	{
@@ -331,7 +341,7 @@ void PrintShopUI(Shop &shop)
 				printf("%16s │", shop.potions[j].name.c_str());
 				break;
 			case 1:
-				printf("%16d │", shop.potions[j].price);
+				printf("%11d Gold │", shop.potions[j].price);
 				break;
 			case 2:
 				printf("%16s │",  IntToCharString(shop.potions[j].recoveryPoint, "♥").c_str());
@@ -344,58 +354,161 @@ void PrintShopUI(Shop &shop)
 		cout << endl;
 	}
 	cout << "└" << IntToCharString(shop.length * 18 - 1, "─") << "┘" << endl;
-	cout << "(1) 3HP 회복 100Gold (2) 완전 회복 250Gold (3) 나가기" << endl;
+
+	for (int i = 0; i < shop.length; i++)
+	{
+		printf("(%d) %s 구매\n", i + 1, shop.potions[i].name.c_str());
+	}
+	cout << "(" << shop.length + 1 << ") 나가기" << endl;
+}
+
+// 상점 포션 구매 함수
+bool BuyPotion(Shop shop, int index)
+{
+	Potion potion = shop.potions[index];
+	if (hero.gold >= potion.price)
+	{
+		hero.gold -= potion.price;
+		hero.HP += potion.recoveryPoint;
+		if (hero.HP > hero.maxHP)
+			hero.HP = hero.maxHP;
+
+		return true;
+	}
+	else 
+		return false;
 }
 
 // 상점의 처리 함수
 void ShopProcess(Shop &shop) 
 {
 	int shopAct;
-	bool outShop = false;
-	while (!outShop)
+	bool msg1 = false, msg2 = false;
+
+	while (true)
 	{
 		system("cls");
 		PrintTopbar();
 		PrintShopUI(shop);
-		cin >> shopAct;
-		switch (shopAct)
+		if (msg1) 
 		{
-		case 1:
-			if (hero.gold > 100)
-			{
-				hero.gold -= 100;
-				hero.HP += 3;
-				if (hero.HP > hero.maxHP)
-					hero.HP = hero.maxHP;
-				cout << "<체력을 3 회복했습니다>" << endl << endl;
-			}
-			else
-				cout << "<골드가 부족합니다>" << endl << endl;
-			break;
-
-		case 2:
-			if (hero.gold > 250)
-			{
-				hero.gold -= 250;
-				hero.HP = hero.maxHP;
-				cout << "<체력을 전부 회복했습니다>" << endl << endl;
-			}
-			else
-				cout << "<골드가 부족합니다>" << endl << endl;
-			break;
-
-		case 3:
-			outShop = true;
-			break;
-		default:
-			//cout << "잘못된 입력" << endl;
-			break;
+			cout << "<체력을 " << shop.potions[shopAct - 1].recoveryPoint << " 회복했습니다>" << endl;
+			msg1 = false;
 		}
+		else if (msg2)
+		{
+			cout << "<골드가 부족합니다>" << endl;
+			msg2 = false;
+		}
+			
+		cin >> shopAct;
+		if (cin.fail() || shopAct < 1 || shopAct - 1 > shop.length)
+		{
+			cin.clear();
+			cin.ignore(256, '\n');
+			continue;
+		}
+		if (shopAct - 1 == shop.length)
+			break;
+
+		if (BuyPotion(shop, shopAct - 1))
+			msg1 = true;
+		else
+			msg2 = true;
 	}
 }
 
-void BattleProcess(){
-	cout << "전투처리";
+int;
+
+void BattleProcess(Tile tile){
+	int battleAct;
+	int monAttack;
+	Monster monster;
+	bool winMSG = false, defeatMSG = false;
+
+	switch (tile.type)
+	{
+	case GRASS:
+		monster = { "고블린", 3, 20, 35 };
+		break;
+	case FOREST:
+		monster = { "늑대", 5, 50, 10 };
+		break;
+	case MUD:
+		monster = { "슬라임", 2, 15, 20 };
+		break;
+	}
+
+	GetEnter();
+
+	while (true)
+	{
+		system("cls");
+		PrintTopbar();
+		if (winMSG)
+		{
+			cout << "------------------------------------" << endl;
+			cout << hero.name << "의 공격! 몬스터의 HP 1 감소!" << endl;
+			cout << "------------------------------------" << endl;
+			winMSG = false;
+		}
+		else if (defeatMSG)
+		{
+			cout << "------------------------------------" << endl;
+			cout << monster.name << "의 공격! HP 1 감소!" << endl;
+			cout << "------------------------------------" << endl;
+			defeatMSG = false;
+		}
+		cout << "<공격 선택> 1(가위), 2(바위), 3(보) : ";
+		cin >> battleAct;
+		if (battleAct > 3 || battleAct < 1 || cin.fail())
+		{
+			cin.clear();
+			cin.ignore(256, '\n');
+			cout << "Error : 잘못된 입력" << endl;
+			continue;
+		}
+
+		srand(time(NULL));
+		monAttack = rand() % 3;
+
+		cout << monster.name << "의 공격 : ";
+		switch (monAttack)
+		{
+		case 0:
+			cout << "가위" << endl;
+			break;
+		case 1:
+			cout << "바위" << endl;
+			break;
+		case 2:
+			cout << "보" << endl;
+			break;
+		}
+
+		int offset = battleAct - 1  - monAttack;
+		switch (offset)
+		{
+		case 0:
+			cout << "무승부! 다시!" << endl << endl;
+			break;
+		// 승리 처리
+		case 1: case -2:
+		{
+			monster.HP--;
+			gameSetting.numOfMonster--;
+			hero.exp += monster.earnedExp;
+			hero.gold += monster.earnedGold;
+			winMSG = true;
+			break;
+		}
+		// 패배 처리
+		case -1: case 2:
+			hero.HP--;
+			defeatMSG = true;
+			break;
+		}
+	}
 }
 
 // 타일의 처리를 하는 함수
@@ -412,7 +525,7 @@ void TileProcess(Tile tile, int noise, char heroAct, Shop shop)
 		// 인카운터 계산후 전투 처리
 		if (100 - tile.encounterPercent < noise)
 		{
-			BattleProcess();
+			BattleProcess(tile);
 		}
 		
 	}
@@ -465,7 +578,7 @@ int main()
 		PrintMSG("맵의 크기를 지정해 주세요 ex) 10 10");
 		cin >> mapSize.x >> mapSize.y;
 
-	} while (cin.fail() || mapSize.x < 10);
+	} while (cin.fail() || mapSize.x < 2 || mapSize.y < 2);
 	gameSetting.difficulty = SizeToDifficulty(mapSize);
 	
 	// 맵 생성 (동적할당)
@@ -483,12 +596,6 @@ int main()
 	InitShop(shop, mapSize);
 
 	gameSetting.numOfMonster = 10 + gameSetting.difficulty * gameSetting.difficulty;
-
-	// 알림
-	string msg = "맵의 크기 : " + to_string(mapSize.x) + 'x' + to_string(mapSize.y) + "\t난이도 : " + IntToCharString(gameSetting.difficulty, "★");
-	PrintMSG(msg);
-
-	
 
 	while (true) 
 	{
