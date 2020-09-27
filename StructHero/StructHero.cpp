@@ -4,6 +4,7 @@
 #include <conio.h>
 using namespace std;
 
+#define WALL	0
 #define GRASS	1
 #define MUD		2
 #define FOREST	3
@@ -65,6 +66,11 @@ struct Tile {
 	string shape;
 };
 
+// 주변 타일 : 주변 타일을 저장하는 배열
+struct AroundTiles {
+	Tile* tiles[8];
+};
+
 // 플레이어 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 경험치 / (int) 레벨 / (int) 골드 / (Vector2Int) 좌표 / (string) 모양
 struct Hero
 {
@@ -105,8 +111,9 @@ struct Shop {
 
 // 게임 세팅 : (int) 난이도 / (int) 몬스터의 수
 struct GameSetting {
-	int difficulty;		// 난이도
-	int numOfMonster;	// 몬스터의 수
+	int difficulty;			// 난이도
+	int numOfMonster;		// 몬스터의 수
+	int battleCount = 0;	// 전투 진행된 수
 };
 /////////////////////////////////////////////////////////////////////
 //
@@ -116,6 +123,7 @@ struct GameSetting {
 
 GameSetting gameSetting;	// 전역 변수::게임 세팅
 Tile** map = nullptr;		// 전역 변수::타일 맵
+Vector2Int mapSize;			// 전역 변수::맵의 크기
 Hero hero;					// 전역 변수::용사
 
 /////////////////////////////////////////////////////////////////////
@@ -140,20 +148,20 @@ string IntToCharString(int num, string ch)
 	return str;
 }
 
-// 용사의 체력을 문자열로 반환하는 함수
-string PrintHP()
+// 체력을 문자열로 반환하는 함수
+string PrintHP(int HP, int maxHP)
 {
-	return IntToCharString(hero.HP, "♥") + IntToCharString(hero.maxHP - hero.HP, "♡");
+	return IntToCharString(HP, "♥") + IntToCharString(maxHP - HP, "♡");
 }
 
 // 게임의 로고를 출력하는 함수
 void PrintLogo()
 {
-	cout << "--------------------------------------" << endl;
+	cout << "======================================" << endl;
 	cout << "                                      " << endl;
-	cout << "   영웅은 절차적 2 : 영웅은 구조적      " << endl;
+	cout << "   영웅은 절차적 2 : 영웅은 구조적    " << endl;
 	cout << "                                      " << endl;
-	cout << "--------------------------------------" << endl;
+	cout << "======================================" << endl;
 }
 
 // 게임 메세지를 출력하는 함수
@@ -166,45 +174,70 @@ void PrintMSG(string msg)
 void PrintTopbar() 
 {
 	printf("==================================================================\n");
-	printf("체력\t=%s=\n", PrintHP().c_str());
-	printf("[%s 용사]\t레벨 : %d (%d / 100)\t골드 : %d\n", hero.name.c_str(), hero.level, hero.exp, hero.gold);
+	printf("체력\t=%s=\n", PrintHP(hero.HP, hero.maxHP).c_str());
+	printf("[용사] %s\t레벨 : %d (%d / 100)\t골드 : %d\n", hero.name.c_str(), hero.level, hero.exp, hero.gold);
 	printf("난이도 : %s\t남은 몬스터 수 : %d\n", IntToCharString(gameSetting.difficulty, "★").c_str(), gameSetting.numOfMonster);
 	printf("==================================================================\n");
 }
 
+// 엔터를 입력받는 함수
 void GetEnter()
 {
-	getchar();
-	fflush(stdin);
+	cout << endl << "넘어가려면 엔터를 누르세요" << endl;
+	getchar(); 
+	while (getchar() != '\n');
 }
 
 // 주변 타일을 받아오는 함수
-Tile** GetAroundEightTiles(Vector2Int coord, Vector2Int size)
+bool GetAroundEightTiles(Vector2Int coord, AroundTiles &aroundTiles)
 {
-	Tile* aroundTiles[8];
-	if (coord.x == 0 || coord.y == 0 || coord.x == size.x + 1 || size.y + 1)
-		return nullptr;
+	if (coord.x == 0 || coord.y == 0 || coord.x == mapSize.x + 1 || coord.y == mapSize.y + 1)
+		return false;
 
-	aroundTiles[0] = &map[coord.x - 1][coord.y - 1];
-	aroundTiles[1] = &map[coord.x - 1][coord.y];
-	aroundTiles[2] = &map[coord.x - 1][coord.y + 1];
-	aroundTiles[3] = &map[coord.x][coord.y - 1];
-	aroundTiles[4] = &map[coord.x][coord.y + 1];
-	aroundTiles[5] = &map[coord.x + 1][coord.y + 1];
-	aroundTiles[6] = &map[coord.x + 1][coord.y];
-	aroundTiles[7] = &map[coord.x + 1][coord.y - 1];
+	aroundTiles.tiles[0] = &map[coord.y - 1][coord.x - 1];
+	aroundTiles.tiles[1] = &map[coord.y - 1][coord.x];
+	aroundTiles.tiles[2] = &map[coord.y - 1][coord.x + 1];
+	aroundTiles.tiles[3] = &map[coord.y][coord.x - 1];
+	aroundTiles.tiles[4] = &map[coord.y][coord.x + 1];
+	aroundTiles.tiles[5] = &map[coord.y + 1][coord.x + 1];
+	aroundTiles.tiles[6] = &map[coord.y + 1][coord.x];
+	aroundTiles.tiles[7] = &map[coord.y + 1][coord.x - 1];
 	
-	return aroundTiles;
+	return true;
+}
+
+// 타일을 랜덤으로 생성하는 함수
+void PlaceTile(Tile origin, Vector2Int coord, int power)
+{
+	Tile &currentTile = map[coord.y][coord.x];
+	if (currentTile.type != origin.type && currentTile.type != WALL && power >= RandomInRange(0, 100))
+	{
+		currentTile.encounterPercent = origin.encounterPercent;
+		currentTile.shape = origin.shape;
+		currentTile.type = origin.type;
+		
+		for (int i = 0; i < 8; i++)
+		{
+			AroundTiles aroundTiles;
+			if (GetAroundEightTiles(coord, aroundTiles))
+			{
+				PlaceTile(origin, aroundTiles.tiles[i]->coord, power - 30);
+			}
+		}
+		
+	}
+	else
+		return;
 }
 
 // 맵의 타일을 결정해주는 함수
-Tile DecideTile(Vector2Int coord, Vector2Int mapSize, int power) 
+Tile DecideTile(Vector2Int coord) 
 {
-	Tile Wall = { {}, 0, 0, true, "  " };
-	Tile Grass = { {}, GRASS, 10, true, "▤" };
-	Tile Mud = { {}, MUD, 30,true, "~~" };
-	Tile Forest = { {}, FOREST, 20, true, "♧" };
-	Tile newTile = Grass;
+	Tile Wall =		{ {}, WALL	, 0		, false	, "  " };
+	Tile Grass =	{ {}, GRASS	, 10	, true	, "≡" };
+	Tile Mud =		{ {}, MUD	, 30	, true	, "~~" };
+	Tile Forest =	{ {}, FOREST, 20	, true	, "♧" };
+	Tile newTile;
 	if (coord.x == 0 || coord.y == 0 || coord.x == mapSize.x + 1 || coord.y == mapSize.y + 1)
 	{
 		newTile = Wall;
@@ -220,25 +253,49 @@ Tile DecideTile(Vector2Int coord, Vector2Int mapSize, int power)
 }
 
 // 맵을 생성하는 함수 (동적할당 사용)
-void CreateMap(Vector2Int size) 
+void CreateMap() 
 {
-	map = new Tile*[size.y + 2];
-	for (int y = 0; y < size.y + 2; y++) 
+	srand(time(NULL));
+	int mudSeed = gameSetting.difficulty - 1;
+	int forestSeed = gameSetting.difficulty - 1;
+	map = new Tile*[mapSize.y + 2];
+	for (int y = 0; y < mapSize.y + 2; y++)
 	{
-		map[y] = new Tile[size.x + 2];
-		for (int x = 0; x < size.x + 2; x++)
+		map[y] = new Tile[mapSize.x + 2];
+		for (int x = 0; x < mapSize.x + 2; x++)
 		{
-			map[y][x] = DecideTile({ y, x }, size, 0);
+			map[y][x] = DecideTile({ y, x });
 		}
+	}
+	Tile Mud = { {}, MUD, 30, true, "~~" };
+	Tile Forest = { {}, FOREST, 20, true, "♧" };
+	Vector2Int coord;
+	while (mudSeed > 0)
+	{
+		coord.x = RandomInRange(1, mapSize.x);
+		coord.y = RandomInRange(1, mapSize.y);
+		cout << "mudSeed" << mudSeed << endl;
+		PlaceTile(Mud, coord, 100 + mudSeed * 20);
+		mudSeed--;
+		
+	}
+	while (forestSeed > 0)
+	{
+		coord.x = RandomInRange(1, mapSize.x);
+		coord.y = RandomInRange(1, mapSize.y);
+		cout << "forestSeed" << forestSeed << endl;
+		PlaceTile(Forest, coord, 100 + forestSeed * 20);
+		forestSeed--;
+		
 	}
 }
 
 // 맵을 출력하는 함수
-void PrintMap(Vector2Int size, Shop shop)
+void PrintMap(Shop shop)
 {
-	for (int y = 0; y < size.y + 1; y++)
+	for (int y = 0; y < mapSize.y + 1; y++)
 	{
-		for (int x = 0; x < size.x + 1; x++)
+		for (int x = 0; x < mapSize.x + 1; x++)
 		{
 			if (shop.coord.x == x && shop.coord.y - 1 == y)
 				printf("%2s", shop.roofShape.c_str());
@@ -254,17 +311,17 @@ void PrintMap(Vector2Int size, Shop shop)
 }
 
 // 맵을 삭제하는 함수 (동적할당 해제)
-void DeleteMap(Vector2Int size)
+void DeleteMap()
 {
-	for (int i = 0; i < size.y; i++)
+	for (int i = 0; i < mapSize.y; i++)
 		delete[] map[i];
 	delete[] map;
 }
 
 // 맵 크기에 따른 난이도 설정 함수
-int SizeToDifficulty(Vector2Int size)
+int SizeToDifficulty()
 {
-	int area = size.x * size.y;
+	int area = mapSize.x * mapSize.y;
 
 	int difficulty = 1;
 	while (area > pow(5 * difficulty, 2))
@@ -273,8 +330,15 @@ int SizeToDifficulty(Vector2Int size)
 	return difficulty;
 }
 
+void HeroLevelup() 
+{
+	hero.level++;
+	hero.exp -= 100;
+	hero.HP = ++hero.maxHP;
+}
+
 // 용사의 움직임 함수
-int HeroMove(char input, Vector2Int mapSize)
+int HeroMove(char input)
 {
 	int noise = RandomInRange(1, 100);
 	switch (input)
@@ -311,7 +375,7 @@ int HeroMove(char input, Vector2Int mapSize)
 }
 
 // 상점 초기화 함수
-void InitShop(Shop &shop , Vector2Int mapSize)
+void InitShop(Shop &shop)
 {
 	shop.length = 4;
 	shop.potions = new Potion[shop.length];
@@ -322,7 +386,7 @@ void InitShop(Shop &shop , Vector2Int mapSize)
 	shop.roofShape = "△";
 	shop.shape = "▣";
 	shop.coord.x = RandomInRange(1, mapSize.x);
-	shop.coord.y = RandomInRange(1, mapSize.x);
+	shop.coord.y = RandomInRange(1, mapSize.y);
 	map[shop.coord.y][shop.coord.x].passable = false;
 }
 
@@ -418,90 +482,109 @@ void ShopProcess(Shop &shop)
 	}
 }
 
-int;
+// 몬스터 상태 출력 함수
+void PrintMonster(Monster &monster) {
+	printf("==================================================================\n");
+	printf("체력\t=%s=\n", PrintHP(monster.HP, monster.MaxHP).c_str());
+	printf("[몬스터] %s\n", monster.name.c_str());
+	printf("==================================================================\n");
+}
 
+// 전투 처리 함수
 void BattleProcess(Tile tile){
 	int battleAct;
 	int monAttack;
 	Monster monster;
-	bool winMSG = false, defeatMSG = false;
+	bool winMSG = false, defeatMSG = false, drawMSG = false;
+	srand(time(NULL));
+	gameSetting.battleCount++;
 
 	switch (tile.type)
 	{
 	case GRASS:
-		monster = { "고블린", 3, 20, 35 };
+		monster = { "고블린", 2, 2, 20, 40 };
 		break;
 	case FOREST:
-		monster = { "늑대", 5, 50, 10 };
+		monster = { "늑대", 5, 5, 70, 15 };
 		break;
 	case MUD:
-		monster = { "슬라임", 2, 15, 20 };
+		monster = { "슬라임", 3, 3, 35, 35 };
 		break;
 	}
-
+	PrintMSG(monster.name + "이(가) 출현하였다! 전투 개시!");
 	GetEnter();
-
+	
 	while (true)
 	{
 		system("cls");
 		PrintTopbar();
+		PrintMonster(monster);
 		if (winMSG)
 		{
-			cout << "------------------------------------" << endl;
-			cout << hero.name << "의 공격! 몬스터의 HP 1 감소!" << endl;
-			cout << "------------------------------------" << endl;
+			PrintMSG(hero.name + "의 공격! 몬스터의 HP 1 감소!");
 			winMSG = false;
 		}
 		else if (defeatMSG)
 		{
-			cout << "------------------------------------" << endl;
-			cout << monster.name << "의 공격! HP 1 감소!" << endl;
-			cout << "------------------------------------" << endl;
+			PrintMSG(monster.name + "의 공격! HP 1 감소!");
 			defeatMSG = false;
 		}
+		else if(drawMSG)
+		{
+			PrintMSG("서로의 공격이 빗겨 나갔다!");
+			drawMSG = false;
+		}
+
+		// 몬스터 사망 검사
+		if (monster.HP <= 0)
+		{
+			gameSetting.numOfMonster--;
+			hero.exp += monster.earnedExp;
+				
+			hero.gold += monster.earnedGold;
+			cout << " << " << monster.name << "이(가) 쓰러졌다! >>" << endl;
+			cout << " << 경험치 " << monster.earnedExp << "증가! >>" << endl;
+			if (hero.exp >= 100)
+			{
+				HeroLevelup();
+				cout << " << " << hero.name << "용사의 레벨이 " << hero.level << "이(가) 되었다! >>" << endl;
+				PrintMSG("체력이 모두 회복되었다!");
+				PrintMSG("최대 체력이 1 증가했다!");
+			}
+			cout << " << " << monster.earnedGold << "골드 획득! >>" << endl;
+			GetEnter();
+			break;
+		}
+		// 용사 사망 검사
+		else if(hero.HP <= 0)
+		{
+			GetEnter();
+			break;
+		}
+
 		cout << "<공격 선택> 1(가위), 2(바위), 3(보) : ";
 		cin >> battleAct;
 		if (battleAct > 3 || battleAct < 1 || cin.fail())
 		{
 			cin.clear();
 			cin.ignore(256, '\n');
-			cout << "Error : 잘못된 입력" << endl;
 			continue;
 		}
 
-		srand(time(NULL));
 		monAttack = rand() % 3;
-
-		cout << monster.name << "의 공격 : ";
-		switch (monAttack)
-		{
-		case 0:
-			cout << "가위" << endl;
-			break;
-		case 1:
-			cout << "바위" << endl;
-			break;
-		case 2:
-			cout << "보" << endl;
-			break;
-		}
 
 		int offset = battleAct - 1  - monAttack;
 		switch (offset)
 		{
+		// 무승부 처리
 		case 0:
-			cout << "무승부! 다시!" << endl << endl;
+			drawMSG = true;
 			break;
 		// 승리 처리
 		case 1: case -2:
-		{
 			monster.HP--;
-			gameSetting.numOfMonster--;
-			hero.exp += monster.earnedExp;
-			hero.gold += monster.earnedGold;
 			winMSG = true;
 			break;
-		}
 		// 패배 처리
 		case -1: case 2:
 			hero.HP--;
@@ -549,8 +632,23 @@ void TileProcess(Tile tile, int noise, char heroAct, Shop shop)
 			break;
 		}
 	}
-
 }
+
+void GameEnd() 
+{
+	cout << "===========================================================" << endl;
+	cout << "당신은 게임에서 ";
+	if (hero.HP <= 0)
+		cout << "패배했습니다." << endl << "패배한 난이도 : ";
+	else
+		cout << "승리했습니다!" << endl << "클리어 난이도 : ";
+	cout << IntToCharString(gameSetting.difficulty, "★") << endl;
+	cout << endl;
+	cout << "전투한 턴수 : " << gameSetting.battleCount << endl;
+	cout << "소지 골드 : " << hero.gold << endl;
+	cout << "===========================================================" << endl;
+}
+
 /////////////////////////////////////////////////////////////////////
 //
 //	메인 함수
@@ -560,50 +658,57 @@ void TileProcess(Tile tile, int noise, char heroAct, Shop shop)
 int main()
 {
 	// 변수 선언
-	
-	Vector2Int mapSize;		// 맵의 크기
-	
-	Shop shop;				// 상점
+	Shop shop;		// 상점
 	
 	// 로고 출력
 	PrintLogo();
+
 	// 용사 이름 설정
 	PrintMSG("용사의 이름을 입력하세요");
 	cin >> hero.name;
 	hero.shape = hero.name.substr(0, 2);
+
 	// 맵의 크기 설정
 	do {
 		cin.clear();
 		cin.ignore(256, '\n');
 		PrintMSG("맵의 크기를 지정해 주세요 ex) 10 10");
 		cin >> mapSize.x >> mapSize.y;
-
 	} while (cin.fail() || mapSize.x < 2 || mapSize.y < 2);
-	gameSetting.difficulty = SizeToDifficulty(mapSize);
 	
-	// 맵 생성 (동적할당)
-	CreateMap(mapSize);
-
 	// 게임 초기화
 	srand(time(NULL));
-	hero.maxHP = hero.HP = 5 + gameSetting.difficulty / 2;
+	
+	gameSetting.difficulty = SizeToDifficulty();
+	gameSetting.numOfMonster = 5 + gameSetting.difficulty * gameSetting.difficulty;
+
+	// 맵 생성 (동적할당)
+	CreateMap();
+
+	// 상점 초기화
+	InitShop(shop);
+
+	// 영웅 초기화
+	hero.maxHP = hero.HP = 6 + gameSetting.difficulty;
 	hero.level = 1;
 	hero.gold = 0;
 	hero.exp = 0;
 	hero.coord.x = RandomInRange(1, mapSize.x);
 	hero.coord.y = RandomInRange(1, mapSize.y);
 	
-	InitShop(shop, mapSize);
-
-	gameSetting.numOfMonster = 10 + gameSetting.difficulty * gameSetting.difficulty;
-
 	while (true) 
 	{
 		system("cls");
 		PrintTopbar();
-		PrintMap(mapSize, shop);
+		PrintMap(shop);
+		if (hero.HP <= 0 || gameSetting.numOfMonster == 0)
+		{
+			GameEnd();
+			GetEnter();
+			break;
+		}
 		char heroAct = _getch();
-		int noise = HeroMove(heroAct, mapSize);
+		int noise = HeroMove(heroAct);
 		TileProcess(map[hero.coord.y][hero.coord.x], noise, heroAct, shop);
 	}
 
@@ -611,44 +716,7 @@ int main()
 	delete[] shop.potions;
 
 	// 맵 삭제 (동적할당 해제)
-	DeleteMap(mapSize);
+	DeleteMap();
 
 	return 0;
 }
-
-/////////////////////////////////////////////////////////////////////
-//
-//	자료 구조
-//
-/////////////////////////////////////////////////////////////////////
-
-struct Data {
-	Tile* tileRef;
-};
-
-struct Node {
-	Data data;
-	Node* next = nullptr;
-};
-
-struct LinkedList
-{
-	Node* head = nullptr;
-	int size = 0;
-
-	Node* CreateNode(Data data)
-	{
-		Node* newNode = new Node;
-		newNode->data = data;
-		newNode->next = nullptr;
-		return newNode;
-	}
-
-	void InsertNode(Data data)
-	{
-		if (head == nullptr)
-		{
-
-		}
-	}
-};
