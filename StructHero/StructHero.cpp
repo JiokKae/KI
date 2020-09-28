@@ -71,12 +71,13 @@ struct AroundTiles {
 	Tile* tiles[8];
 };
 
-// 플레이어 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 경험치 / (int) 레벨 / (int) 골드 / (Vector2Int) 좌표 / (string) 모양
+// 플레이어 : (string) 이름 / (int) 최대 HP / (int) HP / (int) 최대 경험치/ (int) 경험치 / (int) 레벨 / (int) 골드 / (Vector2Int) 좌표 / (string) 모양
 struct Hero
 {
 	string name;
 	int maxHP;
 	int HP;
+	int maxExp;
 	int exp;
 	int level;
 	int gold;
@@ -333,8 +334,9 @@ int SizeToDifficulty()
 void HeroLevelup() 
 {
 	hero.level++;
-	hero.exp -= 100;
+	hero.exp -= hero.maxExp;
 	hero.HP = ++hero.maxHP;
+	hero.maxExp += 10;
 }
 
 // 용사의 움직임 함수
@@ -505,7 +507,7 @@ void BattleProcess(Tile tile){
 		monster = { "고블린", 2, 2, 20, 40 };
 		break;
 	case FOREST:
-		monster = { "늑대", 5, 5, 70, 15 };
+		monster = { "늑대", 5, 5, 65, 20 };
 		break;
 	case MUD:
 		monster = { "슬라임", 3, 3, 35, 35 };
@@ -544,7 +546,7 @@ void BattleProcess(Tile tile){
 			hero.gold += monster.earnedGold;
 			cout << " << " << monster.name << "이(가) 쓰러졌다! >>" << endl;
 			cout << " << 경험치 " << monster.earnedExp << "증가! >>" << endl;
-			if (hero.exp >= 100)
+			if (hero.exp >= hero.maxExp)
 			{
 				HeroLevelup();
 				cout << " << " << hero.name << "용사의 레벨이 " << hero.level << "이(가) 되었다! >>" << endl;
@@ -680,7 +682,7 @@ int main()
 	srand(time(NULL));
 	
 	gameSetting.difficulty = SizeToDifficulty();
-	gameSetting.numOfMonster = 5 + gameSetting.difficulty * gameSetting.difficulty;
+	gameSetting.numOfMonster = 3 + gameSetting.difficulty * gameSetting.difficulty;
 
 	// 맵 생성 (동적할당)
 	CreateMap();
@@ -692,6 +694,7 @@ int main()
 	hero.maxHP = hero.HP = 6 + gameSetting.difficulty;
 	hero.level = 1;
 	hero.gold = 0;
+	hero.maxExp = 100;
 	hero.exp = 0;
 	hero.coord.x = RandomInRange(1, mapSize.x);
 	hero.coord.y = RandomInRange(1, mapSize.y);
