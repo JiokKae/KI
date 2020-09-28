@@ -176,7 +176,7 @@ void PrintTopbar()
 {
 	printf("==================================================================\n");
 	printf("체력\t=%s=\n", PrintHP(hero.HP, hero.maxHP).c_str());
-	printf("[용사] %s\t레벨 : %d (%d / 100)\t골드 : %d\n", hero.name.c_str(), hero.level, hero.exp, hero.gold);
+	printf("[용사] %s\t레벨 : %d (%d / %d)\t골드 : %d\n", hero.name.c_str(), hero.level, hero.exp, hero.maxExp, hero.gold);
 	printf("난이도 : %s\t남은 몬스터 수 : %d\n", IntToCharString(gameSetting.difficulty, "★").c_str(), gameSetting.numOfMonster);
 	printf("==================================================================\n");
 }
@@ -235,7 +235,7 @@ void PlaceTile(Tile origin, Vector2Int coord, int power)
 Tile DecideTile(Vector2Int coord) 
 {
 	Tile Wall =		{ {}, WALL	, 0		, false	, "  " };
-	Tile Grass =	{ {}, GRASS	, 10	, true	, "≡" };
+	Tile Grass =	{ {}, GRASS	, 10	, true	, "▒" }; //ℓ
 	Tile Mud =		{ {}, MUD	, 30	, true	, "~~" };
 	Tile Forest =	{ {}, FOREST, 20	, true	, "♧" };
 	Tile newTile;
@@ -257,7 +257,7 @@ Tile DecideTile(Vector2Int coord)
 void CreateMap() 
 {
 	srand(time(NULL));
-	int mudSeed = gameSetting.difficulty - 1;
+	int mudSeed = gameSetting.difficulty;
 	int forestSeed = gameSetting.difficulty - 1;
 	map = new Tile*[mapSize.y + 2];
 	for (int y = 0; y < mapSize.y + 2; y++)
@@ -276,7 +276,7 @@ void CreateMap()
 		coord.x = RandomInRange(1, mapSize.x);
 		coord.y = RandomInRange(1, mapSize.y);
 		cout << "mudSeed" << mudSeed << endl;
-		PlaceTile(Mud, coord, 100 + mudSeed * 20);
+		PlaceTile(Mud, coord, 80 + mudSeed * 20);
 		mudSeed--;
 		
 	}
@@ -285,7 +285,7 @@ void CreateMap()
 		coord.x = RandomInRange(1, mapSize.x);
 		coord.y = RandomInRange(1, mapSize.y);
 		cout << "forestSeed" << forestSeed << endl;
-		PlaceTile(Forest, coord, 100 + forestSeed * 20);
+		PlaceTile(Forest, coord, 80 + forestSeed * 20);
 		forestSeed--;
 		
 	}
@@ -331,6 +331,19 @@ int SizeToDifficulty()
 	return difficulty;
 }
 
+// 영웅 초기화 함수
+void InitHero() {
+	hero.maxHP = hero.HP = 6 + gameSetting.difficulty;
+	hero.level = 1;
+	hero.gold = 0;
+	hero.maxExp = 100;
+	hero.exp = 0;
+	hero.coord.x = RandomInRange(1, mapSize.x);
+	hero.coord.y = RandomInRange(1, mapSize.y);
+
+}
+
+// 영웅 레벨업 처리 함수
 void HeroLevelup() 
 {
 	hero.level++;
@@ -691,14 +704,8 @@ int main()
 	InitShop(shop);
 
 	// 영웅 초기화
-	hero.maxHP = hero.HP = 6 + gameSetting.difficulty;
-	hero.level = 1;
-	hero.gold = 0;
-	hero.maxExp = 100;
-	hero.exp = 0;
-	hero.coord.x = RandomInRange(1, mapSize.x);
-	hero.coord.y = RandomInRange(1, mapSize.y);
-	
+	InitHero();
+
 	while (true) 
 	{
 		system("cls");

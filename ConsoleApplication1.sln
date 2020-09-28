@@ -21,6 +21,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20200924", "20200924\202009
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "StructHero", "StructHero\StructHero.vcxproj", "{F2ABEFF8-CAB6-4587-8390-559F7E0B3B42}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20200928", "20200928\20200928.vcxproj", "{6D7C03E5-115D-4328-96A7-455363F5C441}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -101,6 +103,14 @@ Global
 		{F2ABEFF8-CAB6-4587-8390-559F7E0B3B42}.Release|x64.Build.0 = Release|x64
 		{F2ABEFF8-CAB6-4587-8390-559F7E0B3B42}.Release|x86.ActiveCfg = Release|Win32
 		{F2ABEFF8-CAB6-4587-8390-559F7E0B3B42}.Release|x86.Build.0 = Release|Win32
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Debug|x64.ActiveCfg = Debug|x64
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Debug|x64.Build.0 = Debug|x64
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Debug|x86.ActiveCfg = Debug|Win32
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Debug|x86.Build.0 = Debug|Win32
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Release|x64.ActiveCfg = Release|x64
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Release|x64.Build.0 = Release|x64
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Release|x86.ActiveCfg = Release|Win32
+		{6D7C03E5-115D-4328-96A7-455363F5C441}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
