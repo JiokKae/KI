@@ -20,8 +20,7 @@
 #include <stdio.h>
 #pragma warning (disable:4996)
 
-#define NUMBER_OF_BOX	450
-
+#define NUMBER_OF_BOX	300
 
 // 전역변수
 HINSTANCE	g_hInstance;	// 프로그램 인스턴스 핸들
@@ -31,9 +30,9 @@ HBITMAP hbmMem, hbmMemOld;
 HDC hdc, hdcMem;
 HDC hdc_BackGround;
 
-
 // 마우스 좌표를 저장하는 함수
 void GetMouseCoord(COORD & coord, LPARAM lParam);
+
 // 좌표에 상자를 그리는 함수
 void DrawRectAtCoord(HDC hdc, int x, int y, int width, int height);
 
@@ -43,6 +42,7 @@ bool IsInBox(int x, int y, StarBox box);
 // 별을 그리는 함수
 void MakeStar(HDC hdc, int x, int y, int size);
 
+// 콜백 함수 윈도우 프로시저
 LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 // 윈도우를 생성하기 위한 함수
@@ -90,27 +90,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static COORD clickedCoord;
 	static StarBox boxes[NUMBER_OF_BOX];
 	static int selectedBoxIndex = -1;
-	static int dropCount = 350000;
+	static int dropCount = 0;
 	static bool dragging = false;
 	static COORD offset;
 	static int ms = 0;
 	static HANDLE hTimer;
-
-	/*
-		변수
-		1. 지역변수 (함수 내에서 선언)
-			스택영역에서 메모리 할당
-			함수 종료시 메모리 해제
-
-		2. 전역변수 ( 함수 외부에서 선언)
-			데이터영역에서 메모리 할당
-			프로그램 종료시 메모리 해제
-
-		3. static 변수 (함수 내에서 선언)
-			데이터 영역에서 메모리 할당
-			프로그램 종료시 메모리 해제
-			함수 내에서만 접근이 가능하다
-	*/
+	static COORD launchPoint = {600, 900};
 
 	switch (iMessage)
 	{
@@ -131,17 +116,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		{
 			boxes[i].x = 70 + 60 * (i % 30);
 			boxes[i].y = 70 + 60 * (i / 30);
-			boxes[i].width = 50;
-			boxes[i].height = 50;
+			boxes[i].width = 40;
+			boxes[i].height = 40;
 		}
 		break;
 	case WM_TIMER:
-		
-		if (ms < NUMBER_OF_BOX)
-		{
-			boxes[ms].isOpened = true;
-			boxes[ms].starSize = rand() % 5 + 1;
-		}
 		ms++;
 
 		InvalidateRect(g_hWnd, NULL, false);
@@ -159,6 +138,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 	case WM_LBUTTONDOWN:
 		GetMouseCoord(clickedCoord, lParam);
+		launchPoint = clickedCoord;
 		for (int i = 0; i < NUMBER_OF_BOX; i++)
 		{
 			if (IsInBox(clickedCoord.X, clickedCoord.Y, boxes[i]))
@@ -201,45 +181,57 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 			{
 				if (selectedBoxIndex != i)
 				{
-					if (boxes[i].y < 900)
+					if (boxes[i].y < launchPoint.Y)
 					{
 						boxes[i].velocityY++;
 					}
-					else
+					else if (boxes[i].y > launchPoint.Y)
 					{
 						boxes[i].velocityY = 0;
-						boxes[i].y = 900;
-						if (boxes[i].x != 600)
-						{
-							if (boxes[i].x > 610)
-								boxes[i].velocityX = -1;
-							else if (boxes[i].x < 590)
-								boxes[i].velocityX = +1;
-							else
-								boxes[i].velocityX = 0;
-						}
-						else
-							boxes[i].x = 600;
-
-					}					
-					
-					if (boxes[i].x == 600 && boxes[i].y == 900)
+						boxes[i].y = launchPoint.Y;
+					}
+					else if(boxes[i].y == launchPoint.Y)
 					{
-						boxes[i].velocityY = -30;
-						boxes[i].velocityX = rand() % 30 - 15;
+						if (boxes[i].x > launchPoint.X)
+							boxes[i].velocityX = -1 - ((boxes[i].x - launchPoint.X) / 50);
+						else if (boxes[i].x < launchPoint.X)
+							boxes[i].velocityX = +1 + ((launchPoint.X - boxes[i].x) / 50);
+						else
+							boxes[i].velocityX = 0;
+					}
+					
+					if (boxes[i].x == launchPoint.X && boxes[i].y == launchPoint.Y)
+					{
+						boxes[i].velocityY = -( 15 + rand() % 30 );
+						boxes[i].velocityX = rand() % 35 - 15;
 					}
 
+					boxes[i].x += boxes[i].velocityX;
+					
+					boxes[i].y += boxes[i].velocityY;
+					if (boxes[i].y > launchPoint.Y)
+						boxes[i].y = launchPoint.Y;
+
+					if (boxes[i].velocityY == 0 && boxes[i].y < launchPoint.Y / 5)
+					{
+						boxes[i].isOpened = true;
+						boxes[i].starSize = rand() % 5 + 1;
+					}
 				}
-
-				boxes[i].x += boxes[i].velocityX;
-				boxes[i].y += boxes[i].velocityY;
-
 				DrawRectAtCoord(hdcMem, boxes[i].x, boxes[i].y, boxes[i].width, boxes[i].height);
 			}
 			else 
 			{
-				++boxes[i].starSize;
-				int isDrop = boxes[i].y > 900;
+				const int starMaxSize = 30;
+				const int starMinSize = 6;
+				boxes[i].starSize++;
+				if (boxes[i].starSize >= starMaxSize)
+				{
+					boxes[i].starSize %= starMaxSize;
+					boxes[i].starSize += starMinSize;
+				}
+					
+				int isDrop = boxes[i].y > launchPoint.Y;
 
 				if (isDrop)
 				{
@@ -247,20 +239,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					dropCount++;
 					boxes[i].starSize = boxes[i].starSize % 15 + 1;
 				}
-				double xoffset = sin((ms + boxes[i].x)/10.0) * 200.0;
+				double xoffset = sin((ms + boxes[i].x)/10.0) * 125.0;
 				char buf[50];
-				
-				sprintf(buf, "xoffset : %lf", xoffset);
-				TextOut(hdcMem, 0, 20, buf, strlen(buf));
 
-				WORD r = (boxes[i].height + boxes[i].starSize + ms) % 150 + 100;
-				WORD g = (boxes[i].height + boxes[i].starSize + ms+r) % 150 + 100;
-				WORD b = (boxes[i].height + boxes[i].starSize + ms+g) % 150 + 0;
+				WORD r = ((boxes[i].height * boxes[i].starSize) / 20 + (ms) / 2) % 35 + 220;
+				WORD g = ((boxes[i].height * boxes[i].starSize) / 20 + (ms+r) / 2) % 55 + 200;
+				WORD b = ((boxes[i].height * boxes[i].starSize) / 20 + (ms+g) / 2) % 50 + 50;
 
 				HPEN hNewPen = CreatePen(PS_SOLID, 3, RGB(r, g, b));
 				HPEN hOldPen = (HPEN)SelectObject(hdcMem, hNewPen);
 
-				MakeStar(hdcMem, boxes[i].x + xoffset, (boxes[i].y += 10) % 1100, boxes[i].starSize / 3);
+				MakeStar(hdcMem, boxes[i].x + xoffset, boxes[i].y += 7, boxes[i].starSize /6);
 
 				DeleteObject(SelectObject(hdcMem, hNewPen));
 				(HPEN)SelectObject(hdcMem, hOldPen);
@@ -314,12 +303,13 @@ bool IsInBox(int x, int y, StarBox box)
 
 void MakeStar(HDC hdc, int x, int y, int size)
 {
+	int weight = 20;
 	// 선을 사용해서 한 붓 그리기로 네모를 그린다.
-	MoveToEx(hdc, x - 100 * size / 10, y + 20 * size / 10, NULL);	// 그리기 시작할 위치를 지정
+	MoveToEx(hdc, x - 100 * size / weight, y + 20 * size / weight, NULL);	// 그리기 시작할 위치를 지정
 
-	LineTo(hdc, x + 100 * size / 10, y + 20 * size / 10);
-	LineTo(hdc, x - 65 * size / 10, y + 130 * size / 10);
-	LineTo(hdc, x, y - 45 * size / 10);
-	LineTo(hdc, x + 65 * size / 10, y + 130 * size / 10);
-	LineTo(hdc, x - 100 * size / 10, y + 20 * size / 10);
+	LineTo(hdc, x + 100 * size / weight, y + 20 * size / weight);
+	LineTo(hdc, x - 65 * size / weight, y + 130 * size / weight);
+	LineTo(hdc, x, y - 45 * size / weight);
+	LineTo(hdc, x + 65 * size / weight, y + 130 * size / weight);
+	LineTo(hdc, x - 100 * size / weight, y + 20 * size / weight);
 }
