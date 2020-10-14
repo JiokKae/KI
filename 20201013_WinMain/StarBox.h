@@ -7,6 +7,8 @@ public:
 	int width;
 	int height;
 	bool isOpened;
-
+	int starSize;
+	int velocityX;
+	int velocityY;
 };
 
