@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 					if (boxes[i].y > launchPoint.Y)
 						boxes[i].y = launchPoint.Y;
 
-					if (boxes[i].velocityY == 0 && boxes[i].y < launchPoint.Y / 5)
+					if (boxes[i].velocityY == 0 && boxes[i].y < launchPoint.Y / 2)
 					{
 						boxes[i].isOpened = true;
 						boxes[i].starSize = rand() % 5 + 1;
