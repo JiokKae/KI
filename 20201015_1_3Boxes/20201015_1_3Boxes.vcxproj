@@ -28,7 +28,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v141</PlatformToolset>
+    <PlatformToolset>v142</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
@@ -89,7 +89,7 @@
       <ConformanceMode>true</ConformanceMode>
     </ClCompile>
     <Link>
-      <SubSystem>Console</SubSystem>
+      <SubSystem>Windows</SubSystem>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -123,11 +123,15 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="BigBox.cpp" />
     <ClCompile Include="main.cpp" />
+    <ClCompile Include="SmallBox.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MyWinLibrary.h" />
+    <ClInclude Include="3BoxLibrary.h" />
+    <ClInclude Include="BigBox.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="SmallBox.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="20201015_1_3Boxes.rc" />

@@ -1,26 +1,9 @@
 #include <Windows.h>
-#include "MyWinLibrary.h"
-#include "resource.h"
 #include <ctime>
-
-#define WINDOW_SIZE_X		1920
-#define WINDOW_SIZE_Y		1000
-#define BIGBOX_SPEED		10
-#define BIGBOX_SIZE			300
-#define BIGBOX_MARGIN		600
-
-#define BIGBOX_COL			(WINDOW_SIZE_X / (BIGBOX_MARGIN + BIGBOX_SIZE)) 
-#define BIGBOX_ROW			(WINDOW_SIZE_Y / (BIGBOX_MARGIN + BIGBOX_SIZE)) 
-#define BIGBOX_MAX_COUNT	(BIGBOX_COL * BIGBOX_ROW)
-
-#define BBBOX_SIZE_X		((BIGBOX_COL- 1) * (BIGBOX_SIZE + BIGBOX_MARGIN) + BIGBOX_MARGIN)
-#define BBBOX_SIZE_Y		((BIGBOX_ROW - 1) * (BIGBOX_SIZE + BIGBOX_MARGIN) + BIGBOX_MARGIN)
-
-// 게임모드 스위치
-#define SPECIAL_SWITCH		0
-#define AUTO_WALL_SWITCH	0
-#define VELOCITY			0
-#define SHOOT_MODE			0
+#include "3BoxLibrary.h"
+#include "SmallBox.h"
+#include "BigBox.h"
+#include "resource.h"
 
 HINSTANCE g_hInstance;
 HWND g_hWnd;
@@ -28,72 +11,13 @@ LPSTR g_lpszClass = (LPSTR)TEXT("삼 상자");
 HBITMAP hbmMem, hbmMemOld;
 HDC hdc, hdcMem;
 HDC hdc_BackGround;
-int passCount = 0;
-
-class BigBox;
-
-class SmallBox
-{
-public:
-	BigBox* parent;
-	POINT position;
-	int width;
-	int height;
-	bool isLaunch;
-
-	RECT GetRect()
-	{
-		RECT rect;
-		rect = { position.x, position.y, position.x + width, position.y + height };
-		return rect;
-	}
-};
-
-class BigBox
-{
-public:
-	int index;
-	POINT position;
-	int width;
-	int height;
-	int speed;
-	POINT velocity;
-	bool passed;
-	bool special;
-	bool isAlive;
-
-	void Init(int i)
-	{
-		index = i;
-		position.x = BIGBOX_MARGIN + i % BIGBOX_COL * (BIGBOX_SIZE + BIGBOX_MARGIN);
-		position.y = BIGBOX_MARGIN + i / BIGBOX_COL * (BIGBOX_SIZE + BIGBOX_MARGIN);
-		width = BIGBOX_SIZE;
-		height = BIGBOX_SIZE;
-		speed = BIGBOX_SPEED;
-		isAlive = true;
-
-		if (VELOCITY)
-			velocity.y = 1;
-		if (!(rand() % 20))
-			special = true;
-		else
-			special = false;
-		if (!(rand() % 10))
-			passed = true;
-		else
-			passed = false;
-	}
-
-	RECT GetRect() 
-	{
-		RECT rect;
-		rect = { position.x, position.y, position.x + width, position.y + height };
-		return rect;
-	}
-};
+int bestScore = 0;
+int score = 0;
+int timeLimit = LIMIT_TIME;
 
 void MoveBigBox(SmallBox &smallBox, BigBox* bigBoxes, RECT worldBox);
 void Init(BigBox* bigBoxes, SmallBox* pSmallBox);
+void Rectangle(HDC hdc, RECT rect);
 void Render(HDC hdc, BigBox* bigBoxes, SmallBox smallBox, RECT worldBox);
 
 // 박스의 충돌 검사
@@ -140,12 +64,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 	static BigBox bigBoxes[BIGBOX_MAX_COUNT];
 	static SmallBox smallBox;
 	static HANDLE hTimer;
-	static RECT worldBox { 0, 0, BBBOX_SIZE_X + BIGBOX_SIZE, BBBOX_SIZE_Y + BIGBOX_SIZE };
+	static HANDLE hEndGmaeTimer;
+	static RECT worldBox { 0, 0, WORLDBOX_SIZE_X + BIGBOX_SIZE, WORLDBOX_SIZE_Y + BIGBOX_SIZE };
 
 	switch (iMessage)
 	{
 	case WM_CREATE:
+		srand((UINT)time(NULL));
 		hTimer = (HANDLE)SetTimer(hWnd, 1, 1000 / 70, NULL);
+		hEndGmaeTimer = (HANDLE)SetTimer(hWnd, 2, 1000, NULL);
 
 		hdc = GetDC(hWnd);
 		hdc_BackGround = CreateCompatibleDC(hdc);
@@ -160,9 +87,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 		break;
 	case WM_TIMER:
-		MoveBigBox(smallBox, bigBoxes, worldBox);
+		switch (wParam)
+		{
+		case 1:
+			if(timeLimit > 0)
+			{
+				MoveBigBox(smallBox, bigBoxes, worldBox);
+			}
+			
+			InvalidateRect(g_hWnd, NULL, false);
+			break;
+			
+		case 2:
+			if (timeLimit > 0)
+				timeLimit--;
+			break;
+		}
 		
-		InvalidateRect(g_hWnd, NULL, false);
 		break;
 	case WM_KEYDOWN:
 		if (GetAsyncKeyState(KEY_R))
@@ -192,6 +133,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 		break;
 
 	case WM_DESTROY:
+		KillTimer(hWnd, 1);
+		KillTimer(hWnd, 2);
 		PostQuitMessage(0);
 		break;
 	}
@@ -200,18 +143,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
 
 void Init(BigBox* bigBoxes, SmallBox* pSmallBox )
 {
-	srand(time(NULL));
 	for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
-	{
 		bigBoxes[i].Init(i);
-	}
-	pSmallBox->position.x = BIGBOX_MARGIN + BIGBOX_SIZE / 4;
-	pSmallBox->position.y = BIGBOX_MARGIN + BIGBOX_SIZE / 4;
-	pSmallBox->width = BIGBOX_SIZE / 2;
-	pSmallBox->height = BIGBOX_SIZE / 2;
-	pSmallBox->parent = &bigBoxes[0];
 
-	passCount = 0;
+	pSmallBox->Init(&bigBoxes[0]);
+	if (score > bestScore)
+		bestScore = score;
+	score = 0;
+	timeLimit = LIMIT_TIME;
 }
 
 void MoveBigBox(SmallBox &smallBox, BigBox* bigBoxes, RECT worldBox) 
@@ -233,7 +172,7 @@ void MoveBigBox(SmallBox &smallBox, BigBox* bigBoxes, RECT worldBox)
 	{
 		smallBox.parent->position.x += smallBox.parent->speed;
 	}
-	if (GetAsyncKeyState(VK_SPACE) && SHOOT_MODE)
+	if (GetAsyncKeyState(VK_SPACE) && GAMEMODE & SHOOT_MODE)
 	{
 		if (smallBox.isLaunch == false)
 		{
@@ -247,139 +186,145 @@ void MoveBigBox(SmallBox &smallBox, BigBox* bigBoxes, RECT worldBox)
 		for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
 		{
 			BigBox& box = bigBoxes[i];
-			if (smallBox.parent->index == i || !box.isAlive)
+			if (smallBox.parent->index == i || box.IsDead())
 				continue;
 			if (BoxCollision(box.GetRect(), smallBox.GetRect()))
 			{
-				if (box.special)
-					passCount += 5;
-				else
-					passCount++;
-
-				box.isAlive = false;
-				smallBox.position = { smallBox.parent->position.x + smallBox.width / 2, smallBox.parent->position.y + smallBox.height / 2 };
+				box.hp--;
+				if (box.IsDead())
+				{
+					if (box.special)
+						score += 5;
+					else
+						score++;
+				}
+				smallBox.position = { smallBox.parent->position.x + smallBox.GetWidth() / 2, smallBox.parent->position.y + smallBox.GetHeight() / 2 };
 				smallBox.isLaunch = false;
 			}
 
 		}
+		// 총알이 세계 밖으로 나갔을 때
 		if (!BoxCollision(worldBox, smallBox.GetRect()))
 		{
-			smallBox.position = { smallBox.parent->position.x + smallBox.width / 2, smallBox.parent->position.y + smallBox.height / 2 };
+			smallBox.position = { smallBox.parent->position.x + smallBox.GetWidth() / 2, smallBox.parent->position.y + smallBox.GetHeight() / 2 };
 			smallBox.isLaunch = false;
 		}
 	}
 	else {
 		// 작은 상자 제한 부분
-		if (smallBox.position.y + smallBox.height > smallBox.parent->position.y + smallBox.parent->height)
-			smallBox.position.y = smallBox.parent->position.y + smallBox.parent->height - smallBox.height;
+		if (smallBox.position.y + smallBox.GetHeight() > smallBox.parent->position.y + smallBox.parent->GetHeight())
+			smallBox.position.y = smallBox.parent->position.y + smallBox.parent->GetHeight() - smallBox.GetHeight();
 		else if (smallBox.position.y < smallBox.parent->position.y)
 			smallBox.position.y = smallBox.parent->position.y;
 
-		if (smallBox.position.x + smallBox.width > smallBox.parent->position.x + smallBox.parent->width)
-			smallBox.position.x = smallBox.parent->position.x + smallBox.parent->width - smallBox.width;
+		if (smallBox.position.x + smallBox.GetWidth() > smallBox.parent->position.x + smallBox.parent->GetWidth())
+			smallBox.position.x = smallBox.parent->position.x + smallBox.parent->GetWidth() - smallBox.GetWidth();
 		else if (smallBox.position.x < smallBox.parent->position.x)
 			smallBox.position.x = smallBox.parent->position.x;
 	}
 	
-
 	// 제어중인 큰 상자 제한 부분
 	if (smallBox.parent->position.x < 0)
 		smallBox.parent->position.x = 0;
-	else if (smallBox.parent->position.x > BBBOX_SIZE_X)
-		smallBox.parent->position.x = BBBOX_SIZE_X;
+	else if (smallBox.parent->position.x + smallBox.parent->GetWidth() > worldBox.right)
+		smallBox.parent->position.x = worldBox.right - smallBox.parent->GetWidth();
 
 	if (smallBox.parent->position.y < 0)
 		smallBox.parent->position.y = 0;
-	else if (smallBox.parent->position.y > BBBOX_SIZE_Y)
-		smallBox.parent->position.y = BBBOX_SIZE_Y;
+	else if (smallBox.parent->position.y + smallBox.parent->GetHeight() > worldBox.bottom)
+		smallBox.parent->position.y = worldBox.bottom - smallBox.parent->GetHeight();
 
 	// 모든 큰상자 제한 부분
 	for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
 	{
 		BigBox& box = bigBoxes[i];
-		if (smallBox.parent->index == i || !box.isAlive)
+		if (smallBox.parent->index == i || box.IsDead())
 			continue;
+		box.position.x += box.velocity.x;
 		box.position.y += box.velocity.y;
+
+		if (box.position.x < 0)
+		{
+			box.position.x = 0;
+			box.velocity.x *= -1;
+		}
+		else if (box.position.x + box.GetWidth() > worldBox.right)
+		{
+			box.position.x = worldBox.right - box.GetWidth();
+			box.velocity.x *= -1;
+		}
 
 		if (box.position.y < 0) 
 		{
 			box.position.y = 0;
 			box.velocity.y *= -1;
 		}
-		else if (box.position.y > BBBOX_SIZE_Y) 
+		else if (box.position.y + box.GetHeight() > worldBox.bottom) 
 		{
-			box.position.y = BBBOX_SIZE_Y;
-			box.velocity.y *= -1;
-		}
-		if (box.position.x < 0) 
-		{
-			box.position.x = 0;
-			box.velocity.x *= -1;
-		}
-		else if (box.position.x > BBBOX_SIZE_X) 
-		{
-			box.position.x = BBBOX_SIZE_X;
+			box.position.y = worldBox.bottom - box.GetHeight();
 			box.velocity.y *= -1;
 		}
 
 	}
 
-	// 제어 상자와 모든 상자 충돌 검사
-	for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
+	if (GAMEMODE & BOX_COLLISION) 
 	{
-		if (smallBox.parent->index == i || !bigBoxes[i].isAlive)
-			continue;
-
-		RECT box1 = smallBox.parent->GetRect();
-		RECT box2 = bigBoxes[i].GetRect();
-
-		if (int result = BoxCollision(box1, box2))
+		// 제어 상자와 모든 상자 충돌 검사
+		for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
 		{
-			switch (result)
+			if (smallBox.parent->index == i || bigBoxes[i].IsDead())
+				continue;
+
+			RECT box1 = smallBox.parent->GetRect();
+			RECT box2 = bigBoxes[i].GetRect();
+
+			if (int result = BoxCollision(box1, box2))
 			{
-			case 1:
-				if (box1.right - box2.left < box1.bottom - box2.top)
-					smallBox.parent->position.x = box2.left - smallBox.parent->width - 1;
-				else
-					smallBox.parent->position.y = box2.top - smallBox.parent->height - 1;
-				break;
-			case 2:
-				if (box2.right - box1.left < box1.bottom - box2.top)
-					smallBox.parent->position.x = box2.right + 1;
-				else
-					smallBox.parent->position.y = box2.top - smallBox.parent->height - 1;
-				break;
-			case 3:
-				if (box1.right - box2.left < box2.bottom - box1.top)
-					smallBox.parent->position.x = box2.left - smallBox.parent->width - 1;
-				else
-					smallBox.parent->position.y = box2.bottom + 1;
-				break;
-			case 4:
-				if (box2.right - box1.left < box2.bottom - box1.top)
-					smallBox.parent->position.x = box2.right + 1;
-				else
-					smallBox.parent->position.y = box2.bottom + 1;
-				break;
-			}
-			if (bigBoxes[i].passed == false)
-			{
-				if (AUTO_WALL_SWITCH)
+				switch (result)
 				{
-					bigBoxes[i].passed = true;
-					passCount++;
-
-					if (bigBoxes[i].special && SPECIAL_SWITCH)
-						passCount += 5;
+				case 1:
+					if (box1.right - box2.left < box1.bottom - box2.top)
+						smallBox.parent->position.x = box2.left - smallBox.parent->GetWidth() - 1;
+					else
+						smallBox.parent->position.y = box2.top - smallBox.parent->GetHeight() - 1;
+					break;
+				case 2:
+					if (box2.right - box1.left < box1.bottom - box2.top)
+						smallBox.parent->position.x = box2.right + 1;
+					else
+						smallBox.parent->position.y = box2.top - smallBox.parent->GetHeight() - 1;
+					break;
+				case 3:
+					if (box1.right - box2.left < box2.bottom - box1.top)
+						smallBox.parent->position.x = box2.left - smallBox.parent->GetWidth() - 1;
+					else
+						smallBox.parent->position.y = box2.bottom + 1;
+					break;
+				case 4:
+					if (box2.right - box1.left < box2.bottom - box1.top)
+						smallBox.parent->position.x = box2.right + 1;
+					else
+						smallBox.parent->position.y = box2.bottom + 1;
+					break;
 				}
-				smallBox.parent = &bigBoxes[i];
-			}
-			else if (!AUTO_WALL_SWITCH)
-				smallBox.parent = &bigBoxes[i];
-		}
+				if (bigBoxes[i].passed == false)
+				{
+					if (GAMEMODE & AUTO_WALL_SWITCH)
+					{
+						bigBoxes[i].passed = true;
+						score++;
 
+						if (bigBoxes[i].special && GAMEMODE & SPECIAL_SWITCH)
+							score += 5;
+					}
+					smallBox.ChangeParent(&bigBoxes[i]);
+				}
+				else if (!(GAMEMODE & AUTO_WALL_SWITCH))
+					smallBox.ChangeParent(&bigBoxes[i]);
+			}
+
+		}
 	}
-	
 }
 
 void Render(HDC hdc, BigBox* bigBoxes, SmallBox smallBox, RECT worldBox) 
@@ -388,25 +333,42 @@ void Render(HDC hdc, BigBox* bigBoxes, SmallBox smallBox, RECT worldBox)
 
 	Rectangle(hdc, worldBox.left, worldBox.top, worldBox.right, worldBox.bottom);
 
+	int controlledBoxIndex = smallBox.parent->index;
 	for (int i = 0; i < BIGBOX_MAX_COUNT; i++)
 	{
 		BigBox bigBox = bigBoxes[i];
-		if (bigBox.isAlive)
+		
+		if (i != controlledBoxIndex || bigBox.IsAlive())
 		{
-			Rectangle(hdc, bigBox.position.x, bigBox.position.y, bigBox.position.x + bigBox.width, bigBox.position.y + bigBox.height);
-			if (bigBox.special && SPECIAL_SWITCH)
-				FillRect(hdc, &bigBox.GetRect(), redBrush);
-			if (bigBox.passed && AUTO_WALL_SWITCH)
+			if (bigBox.passed)
 				FillRect(hdc, &bigBox.GetRect(), (HBRUSH)GetStockObject(BLACK_BRUSH));
+			else if(bigBox.special)
+				FillRect(hdc, &bigBox.GetRect(), redBrush);
+			else
+				Rectangle(hdc, bigBox.position.x, bigBox.position.y, bigBox.position.x + bigBox.GetWidth(), bigBox.position.y + bigBox.GetHeight());
 		}
 	}
-	RECT rect = smallBox.GetRect();
-	Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
-	FillRect(hdc, &rect, (HBRUSH)GetStockObject(GRAY_BRUSH));
+
+	BigBox &cBox = bigBoxes[controlledBoxIndex];
+	if (cBox.passed)
+		FillRect(hdc, &cBox.GetRect(), (HBRUSH)GetStockObject(BLACK_BRUSH));
+	else if (cBox.special)
+		FillRect(hdc, &cBox.GetRect(), redBrush);
+	else
+		Rectangle(hdc, cBox.GetRect());
+
+	Rectangle(hdc, smallBox.GetRect());
+	FillRect(hdc, &smallBox.GetRect(), (HBRUSH)GetStockObject(GRAY_BRUSH));
 
 	char str[50];
-	wsprintf(str, "점수 : %d", passCount * 100);
+	wsprintf(str, "최고 점수 : %d", bestScore * 100);
 	TextOut(hdc, 0, 0, str, strlen(str));
+	wsprintf(str, "점수 : %d", score * 100);
+	TextOut(hdc, 0, 15, str, strlen(str));
+	wsprintf(str, "시간 제한 : %d초", timeLimit);
+	TextOut(hdc, 0, 30, str, strlen(str));
+	wsprintf(str, "재시작 : R키");
+	TextOut(hdc, 0, 45, str, strlen(str));
 
 	DeleteObject(redBrush);
 }
@@ -421,14 +383,18 @@ bool IsInRect(RECT rc, POINT pt)
 
 int BoxCollision(RECT box1, RECT box2)
 {
-	if (IsInRect(box1, { box2.left, box2.top }))
+	if (IsInRect(box1, { box2.left, box2.top }) || IsInRect(box2, { box1.right, box1.bottom }))
 		return 1;
-	if(IsInRect(box1, { box2.right, box2.top }))
+	if(IsInRect(box1, { box2.right, box2.top }) || IsInRect(box2, { box1.left, box1.bottom }))
 		return 2;
-	if(IsInRect(box1, { box2.left, box2.bottom }))
+	if(IsInRect(box1, { box2.left, box2.bottom }) || IsInRect(box2, { box1.right, box1.top }))
 		return 3;
-	if(IsInRect(box1, { box2.right, box2.bottom }))
+	if(IsInRect(box1, { box2.right, box2.bottom }) || IsInRect(box2, { box1.left, box1.top }))
 		return 4;
 
 	return 0;
+}
+
+void Rectangle(HDC hdc, RECT rect) {
+	Rectangle(hdc, rect.left, rect.top, rect.right, rect.bottom);
 }
