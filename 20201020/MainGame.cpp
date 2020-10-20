@@ -1,6 +1,14 @@
 #include "MainGame.h"
 #include "Tank.h"
+#include "Enemy.h"
+#include "Missile.h"
+
 #include <cmath>
+
+double Distance(POINTFLOAT pos1, POINTFLOAT pos2)
+{
+	return sqrt(pow(pos1.x - pos2.x, 2) + pow(pos1.y - pos2.y, 2));
+}
 
 HRESULT MainGame::Init(HINSTANCE hInst)
 {
@@ -8,12 +16,41 @@ HRESULT MainGame::Init(HINSTANCE hInst)
 
 	tank1 = new Tank();
 	tank1->Init();
+
+	numOfEnemy = 2;
+	enemys = new Enemy[numOfEnemy];
+	for (int i = 0; i < numOfEnemy; i++) {
+		enemys[i].Init();
+		enemys[i].Appear();
+	}
 	
+	// 미사일
+	numOfMissile = 50;
+	missile = new Missile[numOfMissile];
+	for (int i = 0; i < numOfMissile; i++)
+		missile[i].Init();
+
 	return S_OK;
 }
 
 void MainGame::Release()
 {
+	tank1->Release();
+	delete tank1;
+
+	for (int i = 0; i < numOfEnemy; i++)
+		enemys[i].Release();
+	if (enemys)
+	{
+		if (numOfEnemy == 1)
+			delete enemys;
+		else
+			delete[] enemys;
+	}
+
+	for (int i = 0; i < numOfMissile; i++)
+		missile[i].Release();
+	delete[] missile;
 }
 
 void MainGame::Update()
@@ -32,9 +69,47 @@ void MainGame::Update()
 		}
 		if (GetAsyncKeyState(VK_SPACE))
 		{
-			tank1->Fire();
+			tank1->Fire(missile, currentMissileIndex, numOfMissile);
+		}
+
+		for (int i = 0; i < numOfEnemy; i++)
+		{
+			if (enemys)
+			{
+				enemys[i].Update(tank1->GetPos());
+			}
 		}
 	}
+	if (missile)
+	{
+		for (int i = 0; i < numOfMissile; i++)
+		{
+			if (missile[i].IsFire())
+			{
+				missile[i].Update(enemys, numOfEnemy);
+				// 적과의 충돌 검사
+				if (enemys)
+				{
+					for (int j = 0; j < numOfEnemy; j++)
+					{
+						if (enemys[j].IsAlive())
+						{
+							if (Distance(missile[i].GetPos(), enemys[j].GetPos()) < (enemys[j].GetSize() / 2 + missile[i].GetSize() / 2))
+							{
+								enemys[j].Dead();
+								missile[i].SetIsFire(false);
+								currentEnemyCount--;
+							}
+						}
+					}
+				}
+			}
+			
+		}
+	}
+	
+	if (currentEnemyCount <= 0)
+		SetEnemyWave(numOfEnemy + 1);
 	
 	InvalidateRect(g_hWnd, NULL, false);
 }
@@ -46,7 +121,14 @@ void MainGame::Render(HDC hdc)
 
 	BitBlt(hdcMem, 0, 0, WIN_SIZE_X, WIN_SIZE_Y, hdc_BackGround, 0, 0, SRCCOPY);
 	
+	// 탱크 렌더
 	tank1->Render(hdcMem);
+	// 적 렌더
+	for (int i = 0; i < numOfEnemy; i++)
+		enemys[i].Render(hdcMem);
+	// 미사일 렌더
+	for (int i = 0; i < numOfMissile; i++)
+		missile[i].Render(hdcMem);
 
 	char szText[128];
 	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);
@@ -59,6 +141,25 @@ void MainGame::Render(HDC hdc)
 	SelectObject(hdcMem, hbmMemOld); //-4
 	DeleteObject(hbmMem); //-3
 	g_Frame++;
+}
+
+void MainGame::SetEnemyWave(int num)
+{
+	if (enemys) 
+	{
+		if (numOfEnemy == 1)
+			delete enemys;
+		else
+			delete[] enemys;
+	}
+		
+	enemys = new Enemy[num];
+	for (int i = 0; i < num; i++) {
+		enemys[i].Init();
+		enemys[i].Appear();
+	}
+
+	numOfEnemy = currentEnemyCount = num;
 }
 
 LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -109,13 +210,4 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	}
 
 	return DefWindowProc(hWnd, iMessage, wParam, lParam);
-}
-
-MainGame::MainGame()
-{
-}
-
-
-MainGame::~MainGame()
-{
 }

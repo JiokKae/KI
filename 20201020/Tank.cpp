@@ -9,66 +9,55 @@ HRESULT Tank::Init()
 
 	// 포신
 	barrelSize = 130;
-
-	// 미사일
-	numOfMissile = 5000;
-	missile = new Missile[numOfMissile];
-	for (int i = 0; i < numOfMissile; i++)
-		missile[i].Init();
+	cooltime = 10;
+	
 
 	return S_OK;
 }
 
 void Tank::Release()
 {
-	for (int i = 0; i < numOfMissile; i++)
-		missile->Release();
 	
-	delete[] missile;
 }
 
 void Tank::Update()
 {
-	for (int i = 0; i < numOfMissile; i++)
-		missile[i].Update();
+	
 }
 
 void Tank::Render(HDC hdc)
 {
 	// 몸체
-	Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2), pos.x + (size / 2), pos.y + (size / 2));
+	Ellipse(hdc, (int)(pos.x - (size / 2)), (int)(pos.y - (size / 2)), (int)(pos.x + (size / 2)), (int)(pos.y + (size / 2)));
 	
 	// 포신
-	MoveToEx(hdc, pos.x, pos.y, NULL);
+	MoveToEx(hdc, (int)pos.x, (int)pos.y, NULL);
 
-	LineTo(hdc, GetBarrelEnd().x, GetBarrelEnd().y);
-
-	// 미사일
-	for (int i = 0; i < numOfMissile; i++)
-		missile[i].Render(hdc);
+	LineTo(hdc, (int)GetBarrelEnd().x, (int)GetBarrelEnd().y);
 	
 	char szText[128];
 	wsprintf(szText, "Angle : %d", angle);
 	TextOut(hdc, 5, 60, szText, strlen(szText));
 }
 
-void Tank::Fire()
+void Tank::Fire(Missile * missile, int &index, int numOfMissile)
 {
 	if (missile)
 	{
-		if (missile[currentMissileIndex].IsFire() == false)
+		if (missile[index].IsFire() == false && shootFrame + cooltime < g_Frame)
 		{
-			for (int i = -1; i < 2; i++)
+			int num = 1;
+			for (int i = 0; i < num; i++)
 			{
-				missile[currentMissileIndex+i].SetPos(GetBarrelEnd());
-
-				missile[currentMissileIndex+i].SetSpeed(angle + i * 20);
-				missile[currentMissileIndex+i].SetIsFire(true);
+				missile[index + i].SetPos(GetBarrelEnd());
+				missile[index + i].SetSpeed(angle + i * 20);
+				missile[index + i].SetIsFire(true);
 			}
 			
-			currentMissileIndex += 3;
-			if (currentMissileIndex + 90 > numOfMissile - 1)
-				currentMissileIndex = 0;
+			index += num;
+			if (index + num > numOfMissile - 1)
+				index = 0;
+			shootFrame = g_Frame;
 		}
 	}
 }
@@ -84,8 +73,13 @@ void Tank::RotateBarrel(int delta)
 		angle = 90;
 }
 
-POINT Tank::GetBarrelEnd()
+POINTFLOAT Tank::GetBarrelEnd()
 {
-	POINT p = { pos.x + cos(RADIAN(angle)) * barrelSize , pos.y + sin(RADIAN(angle)) * barrelSize };
+	POINTFLOAT p = { pos.x + cos(RADIAN(angle)) * barrelSize , pos.y + sin(RADIAN(angle)) * barrelSize };
 	return p;
+}
+
+POINTFLOAT Tank::GetPos()
+{
+	return pos;
 }

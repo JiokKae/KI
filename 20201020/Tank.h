@@ -6,17 +6,14 @@ class Missile;
 class Tank : public GameNode
 {
 	// 몸통 좌표, 크기
-	POINT pos;
+	POINTFLOAT pos;
 	int size;
+	int shootFrame;
+	int cooltime;
 
 	// 포신
 	int barrelSize;
 	int angle;
-
-	// 미사일
-	Missile* missile;
-	int numOfMissile;
-	int currentMissileIndex;
 
 public:
 	
@@ -25,9 +22,10 @@ public:
 	void Update();
 	void Render(HDC hdc);
 
-	void Fire();
+	void Fire(Missile* missile, int& index, int numOfMissile);
 	void SetAngle(int angle);
 	void RotateBarrel(int delta);
-	POINT GetBarrelEnd();
+	POINTFLOAT GetBarrelEnd();
+	POINTFLOAT GetPos();
 };
 

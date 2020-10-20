@@ -1,4 +1,5 @@
 #include "Missile.h"
+#include "Enemy.h"
 
 void RainbowCircle(HDC hdc, RECT pos, int _size, int num = 72, int T = 0, int sizeT = 0, int dir = 1);
 
@@ -6,10 +7,10 @@ HRESULT Missile::Init()
 {
 	pos.x = 0;
 	pos.y = 0;
-	baseSpeed = 40.0f;
+	baseSpeed = 10.0f;
 	speed.x = 0;
 	speed.y = 0;
-	size = 20;
+	size = 40;
 	isFire = false;
 
 	return S_OK;
@@ -19,29 +20,15 @@ void Missile::Release()
 {
 }
 
-void Missile::Update()
+void Missile::Update(Enemy* enemys, int numOfEnemy)
 {
 	if (isFire)
 	{
 		pos.y += speed.y;
 		pos.x += speed.x;
-		if (pos.y < 0)
-		{
-			speed.y = -speed.y;
-		}
-		if (pos.x < 0)
-		{
-			speed.x = -speed.x;
-		}
-		if(pos.x > WIN_SIZE_X)
-		{
-			speed.x = -speed.x;
-		}
-		if (pos.y > WIN_SIZE_Y)
-		{
-			speed.y = -speed.y;
-		}
-			
+
+		if (pos.y < 0 || pos.x < 0 || pos.x > WIN_SIZE_X || pos.y > WIN_SIZE_Y)
+			isFire = false;
 	}
 }
 
@@ -49,8 +36,9 @@ void Missile::Render(HDC hdc)
 {
 	if (isFire) 
 	{
-		//Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2), pos.x + (size / 2), pos.y + (size / 2));
-		RainbowCircle(hdc, { pos.x - (size / 2), pos.y - (size / 2), pos.x + (size / 2), pos.y + (size / 2) }, 20, 72);
+		
+		RainbowCircle(hdc, { (LONG)(pos.x - (size / 5)), (LONG)(pos.y - (size / 5)), (LONG)(pos.x + (size / 5)), (LONG)(pos.y + (size / 5)) }, size / 5, 72);
+		//Ellipse(hdc, (int)(pos.x - (size / 2)), (int)(pos.y - (size / 2)), (int)(pos.x + (size / 2)), (int)(pos.y + (size / 2)));
 	}
 		
 }
@@ -63,10 +51,10 @@ void RainbowCircle(HDC hdc, RECT pos, int _size, int num, int T, int sizeT, int 
 
 	for (int i = 0; i < num; i++)
 	{
-		RECT rect = { pos.left + sin(g_Frame * dir / 20.0 + i * radian) * size,
-			pos.top + cos(g_Frame * dir / 20.0 + i * radian) * size,
-			pos.right + sin(g_Frame * dir / 20.0 + i * radian) * size,
-			pos.bottom + cos(g_Frame * dir / 20.0 + i * radian) * size };
+		RECT rect = { pos.left + (LONG)(sin(g_Frame * dir / 20.0 + i * radian) * size),
+			pos.top + (LONG)(cos(g_Frame * dir / 20.0 + i * radian) * size),
+			pos.right + (LONG)(sin(g_Frame * dir / 20.0 + i * radian) * size),
+			pos.bottom + (LONG)(cos(g_Frame * dir / 20.0 + i * radian) * size) };
 
 		HBRUSH brush = CreateSolidBrush(
 			RGB(
