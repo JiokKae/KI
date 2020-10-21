@@ -1,13 +1,13 @@
+#include "pch.h"
 #include "MainGame.h"
 #include "Tank.h"
 #include "Enemy.h"
 #include "Missile.h"
+#include "MacroFunction.h"
 
-#include <cmath>
-
-double Distance(POINTFLOAT pos1, POINTFLOAT pos2)
+inline bool Collision(Missile missile, Enemy enemy)
 {
-	return sqrt(pow(pos1.x - pos2.x, 2) + pow(pos1.y - pos2.y, 2));
+	return Distance(missile.GetPos(), enemy.GetPos()) < (enemy.GetSize() / 2 + missile.GetSize() / 2);
 }
 
 HRESULT MainGame::Init(HINSTANCE hInst)
@@ -17,7 +17,8 @@ HRESULT MainGame::Init(HINSTANCE hInst)
 	tank1 = new Tank();
 	tank1->Init();
 
-	numOfEnemy = 2;
+	numOfEnemy = currentEnemyCount = 1;
+	
 	enemys = new Enemy[numOfEnemy];
 	for (int i = 0; i < numOfEnemy; i++) {
 		enemys[i].Init();
@@ -40,13 +41,7 @@ void MainGame::Release()
 
 	for (int i = 0; i < numOfEnemy; i++)
 		enemys[i].Release();
-	if (enemys)
-	{
-		if (numOfEnemy == 1)
-			delete enemys;
-		else
-			delete[] enemys;
-	}
+	delete[] enemys;
 
 	for (int i = 0; i < numOfMissile; i++)
 		missile[i].Release();
@@ -94,7 +89,7 @@ void MainGame::Update()
 					{
 						if (enemys[j].IsAlive())
 						{
-							if (Distance(missile[i].GetPos(), enemys[j].GetPos()) < (enemys[j].GetSize() / 2 + missile[i].GetSize() / 2))
+							if (Collision(missile[i],enemys[j]))
 							{
 								enemys[j].Dead();
 								missile[i].SetIsFire(false);
@@ -114,6 +109,8 @@ void MainGame::Update()
 	InvalidateRect(g_hWnd, NULL, false);
 }
 
+int x = 1100, y = 0;
+int vx = -2, vy = +5;
 void MainGame::Render(HDC hdc)
 {
 	hbmMem = CreateCompatibleBitmap(hdc, WIN_SIZE_X, WIN_SIZE_Y);//3
@@ -130,12 +127,23 @@ void MainGame::Render(HDC hdc)
 	for (int i = 0; i < numOfMissile; i++)
 		missile[i].Render(hdcMem);
 
+	
+	Ellipse(hdcMem, x, y, x + 100, y + 100);
+	vx = -g_Frame * 3;
+	vy = g_Frame * 2;
+	//x += vx + cos(g_Frame);
+	//y += vy + sin(g_Frame);
+	
+	x = cos(g_Frame/30.0) * (300.0 - ((float)g_Frame/2)) + 1000 + vx;
+	y = sin(g_Frame/30.0) * (200.0 - ((float)g_Frame/2)) + 100 + vy;
+
 	char szText[128];
 	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);
 	TextOut(hdcMem, 10, 5, szText, strlen(szText));
 	wsprintf(szText, "Clicked X : %d, Y : %d", mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(hdcMem, 10, 30, szText, strlen(szText));
-
+	wsprintf(szText, "g_Frame : %d", g_Frame);
+	TextOut(hdcMem, 10, 55, szText, strlen(szText));
 	BitBlt(hdc, 0, 0, WIN_SIZE_X, WIN_SIZE_Y, hdcMem, 0, 0, SRCCOPY);
 
 	SelectObject(hdcMem, hbmMemOld); //-4
@@ -147,10 +155,7 @@ void MainGame::SetEnemyWave(int num)
 {
 	if (enemys) 
 	{
-		if (numOfEnemy == 1)
-			delete enemys;
-		else
-			delete[] enemys;
+		delete[] enemys;
 	}
 		
 	enemys = new Enemy[num];

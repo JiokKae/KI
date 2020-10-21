@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "Tank.h"
 #include "Missile.h"
 
@@ -9,7 +10,7 @@ HRESULT Tank::Init()
 
 	// Æ÷½Å
 	barrelSize = 130;
-	cooltime = 10;
+	cooltime = 5;
 	
 
 	return S_OK;

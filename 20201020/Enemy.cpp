@@ -1,5 +1,6 @@
+#include "pch.h"
 #include "Enemy.h"
-#include <cmath>
+
 
 POINTFLOAT Normalize(POINTFLOAT pos) {
 	 float deno = pow(pos.x, 2) + pow(pos.y, 2);
@@ -13,9 +14,9 @@ HRESULT Enemy::Init()
 {
 	pos.x = (FLOAT)(rand() % 1200);
 	pos.y = (FLOAT)(rand() % 300);
-	speed = 2;
+	speed = 4;
 	size = 50;
-
+	velocity = {15,0};
 	return S_OK;
 }
 
@@ -29,9 +30,15 @@ void Enemy::Update(POINTFLOAT tankPos)
 	{
 		POINTFLOAT vector = { tankPos.x - pos.x , tankPos.y - pos.y };
 		POINTFLOAT nomalVector = Normalize(vector);
+		
+		velocity.x += nomalVector.x;
+		velocity.y += nomalVector.y;
 
-		pos.x += nomalVector.x * speed;
-		pos.y += nomalVector.y * speed;
+		pos.x += velocity.x;
+		pos.y += velocity.y;
+
+		//pos.x += nomalVector.x * speed;
+		//pos.y += nomalVector.y * speed;
 	}
 }
 

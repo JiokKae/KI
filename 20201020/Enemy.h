@@ -8,6 +8,7 @@ private:
 	POINTFLOAT pos;
 	int size;
 	float speed;
+	POINTFLOAT velocity;
 	bool isAlive;
 
 public:
