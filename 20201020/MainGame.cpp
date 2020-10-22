@@ -26,7 +26,7 @@ HRESULT MainGame::Init(HINSTANCE hInst)
 	}
 	
 	// πÃªÁ¿œ
-	numOfMissile = 50;
+	numOfMissile = 100;
 	missile = new Missile[numOfMissile];
 	for (int i = 0; i < numOfMissile; i++)
 		missile[i].Init();
