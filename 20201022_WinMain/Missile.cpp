@@ -6,7 +6,7 @@ HRESULT Missile::Init()
 {
 	pos.x = 0;
 	pos.y = 0;
-	speed = 5.0f;
+	speed = 10.0f;
 	size = 30;
 	isFire = false;
 	angle = 0.0f;
@@ -36,17 +36,27 @@ void Missile::Update(FPOINT enemyPos, int enemySize)
 		float distance = sqrt(pow(enemyPos.x - pos.x, 2) + pow(enemyPos.y - pos.y, 2));
 
 		if (distance < size / 2 + enemySize / 2)
-			isFire = false;
+			;//isFire = false;
 		else if (distance < 3000)
 		{
 			FPOINT v;
-			v.x = enemyPos.x - pos.x;
-			v.y = enemyPos.y - pos.y;
+			//v.x = enemyPos.x - pos.x;
+			//v.y = enemyPos.y - pos.y;
+			//
+			//v = Normalize(v);
+
+			float radian = atan2(enemyPos.y - pos.y, enemyPos.x - pos.x);
+			//if (radian < 0)
+			//	radian += 2 * PI;
+			v.x = cos(radian);
+			v.y = sin(radian);
 			
-			v = Normalize(v);
+//			v = Normalize(v);
 
 			direction.x = Lerp(direction.x, v.x, 0.01f);
 			direction.y = Lerp(direction.y, v.y, 0.01f);
+
+			//direction = Normalize(direction);
 
 		}
 

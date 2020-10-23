@@ -30,7 +30,7 @@
 #define KEY_Y 0x59
 #define KEY_Z 0x5A
 
-HRESULT MainGame::Init(HINSTANCE hInst)
+HRESULT MainGame::Init(HINSTANCE hInst, HWND hWnd)
 {
 	hInstance = hInst;
 	hTimer = (HANDLE)SetTimer(
@@ -142,9 +142,8 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		hdcMem = CreateCompatibleDC(hdc);
-
 		hdc = GetDC(hWnd);
+		hdcMem = CreateCompatibleDC(hdc);
 		hdc_BackGround = CreateCompatibleDC(hdc);
 		ReleaseDC(hWnd, hdc);
 
@@ -171,12 +170,11 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		break;
 
 	case WM_PAINT:
-		HDC hdc;
-		hdc = BeginPaint(g_hWnd, &ps);
+		hdc = BeginPaint(hWnd, &ps);
 
 		this->Render(hdc);
 
-		EndPaint(g_hWnd, &ps);
+		EndPaint(hWnd, &ps);
 		break;
 	case WM_DESTROY:
 		PostQuitMessage(0);

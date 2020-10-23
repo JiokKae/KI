@@ -67,12 +67,10 @@ bool IsInRect(RECT rc, POINT pt)
 	return false;
 }
 
-LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
-	WPARAM wParam, LPARAM lParam);
+LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 
 // 윈도우를 생성하기 위한 함수
-int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance,
-	LPSTR _lpszCmdParam, int nCmdShow)
+int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance, LPSTR _lpszCmdParam, int nCmdShow)
 {
 	// 윈도우 생성을 위한 기본셋팅
 	g_hInstance = _hInstance;
@@ -98,12 +96,12 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance,
 		NULL, NULL, g_hInstance, NULL);
 
 	// 윈도우 실작업영역 재설정
-	SetWindowSize(50, 50, WINSIZE_X, WINSIZE_Y);
+	SetWindowSize(0, 0, WINSIZE_X, WINSIZE_Y);
 
 	// 윈도우 출력
 	ShowWindow(g_hWnd, nCmdShow);
 
-	g_mainGame.Init(g_hInstance);
+	g_mainGame.Init(g_hInstance, g_hWnd);
 
 	// 메시지 큐에 있는 메시지 처리
 	MSG message;

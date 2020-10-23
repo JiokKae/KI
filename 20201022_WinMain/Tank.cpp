@@ -15,7 +15,7 @@ HRESULT Tank::Init()
 	barrelEnd.x = WINSIZE_X / 2;
 	barrelEnd.y = pos.y - barrelSize;
 	barrelAngle = 90.0f;	// degree : 0 ~ 360 / radian : 0 ~ 6.28
-	cooltime = 20;
+	cooltime = 5;
 	shootFrame = 0;		/*
 		90 : 360 = x : 6.28
 		360 * x = 6.28 * 90
@@ -26,7 +26,7 @@ HRESULT Tank::Init()
 	
 
 	// πÃªÁ¿œ
-	numOfMissile = 50;
+	numOfMissile = 5000;
 	currentMissileCount = 0;
 	missile = new Missile[numOfMissile];
 	for (int i = 0; i < numOfMissile; i++)

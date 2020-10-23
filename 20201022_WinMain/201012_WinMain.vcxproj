@@ -23,7 +23,7 @@
     <ProjectGuid>{516D39DE-BFBE-4EAC-9F23-0D9D034ECB01}</ProjectGuid>
     <RootNamespace>My201012WinMain</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
-    <ProjectName>20201022_WinMain</ProjectName>
+    <ProjectName>20201022_WinMain_1945</ProjectName>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
@@ -133,10 +133,11 @@
     <ClInclude Include="Missile.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="resource.h" />
+    <ClInclude Include="resource1.h" />
     <ClInclude Include="Tank.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="20201022_WinMain.rc" />
+    <ResourceCompile Include="20201022_WinMain_1945.rc" />
   </ItemGroup>
   <ItemGroup>
     <Image Include="bitmap1.bmp" />

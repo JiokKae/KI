@@ -13,6 +13,8 @@ private:
 	};
 
 	HINSTANCE hInstance;
+	HWND hWnd;
+
 	HDC hdc, hdcMem;
 	HDC hdc_BackGround;
 	HBITMAP hbmMem, hbmMemOld;
@@ -27,7 +29,7 @@ public:
 	// 오버로딩
 	// 오버라이딩
 
-	HRESULT Init(HINSTANCE hInst);
+	HRESULT Init(HINSTANCE hInst, HWND hWnd);
 	void Release();
 	void Update();
 	void Render(HDC hdc);

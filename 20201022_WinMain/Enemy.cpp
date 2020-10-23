@@ -2,9 +2,9 @@
 
 HRESULT Enemy::Init()
 {
-	pos.x = 100;
-	pos.y = 150;
-	size = 100;
+	pos.x = 500;
+	pos.y = 350;
+	size = 110;
 	speed.x = 0.0f;
 	speed.y = 0;
 
