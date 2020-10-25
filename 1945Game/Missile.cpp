@@ -168,7 +168,7 @@ void Missile::SetPattern(Pattern pattern)
 		break;
 	case Pattern::HURRICANE:
 		speed *= 1.5f;
-		cooltime = 20;
+		cooltime = 2;
 		break;
 	}
 }
@@ -209,7 +209,8 @@ void Missile::AdditionalMissile(Missile* missile)
 
 	// 1 to 1
 	case Pattern::HURRICANE:
-		missile[GetMissileCount()].Fired(allies, pos, g_Frame * 4 % 360, Pattern::SHOTGUN, size * 0.8f, speed * 0.6f);
+		angle += 45;
+		missile[GetMissileCount()].Fired(allies, pos, angle, Pattern::SHOTGUN, size * 0.8f, speed * 0.2f);
 		break;
 	}
 	shootFrame = g_Frame;

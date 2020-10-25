@@ -8,14 +8,14 @@ HRESULT Tank::Init()
 	// ¸öÅë
 	pos.x = WINDOW_SIZE_X / 2;
 	pos.y = WINDOW_SIZE_Y;
-	size = 60;
+	size = 20;
 	speed = 6;
 	hPenOutline = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
 	hBrushInside = CreateSolidBrush(RGB(200, 200, 255));
 	aliies = Allies::PLAYER;
 
 	// Æ÷½Å
-	barrelSize = 60;
+	barrelSize = 20;
 	
 	barrelAngle += 90.0f * barrelSpeed;
 	barrelEnd.x = pos.x + cosf(RADIAN(barrelAngle)) * barrelSize;

@@ -89,7 +89,7 @@ void MainGame::Render(HDC hdc)
 	TextOut(hdcMem, 0, 60, buf, strlen(buf));
 
 	wsprintf(buf, "ÇÇ°Ý È½¼ö : %dÈ¸", Tank::hitCount);
-	TextOut(hdcMem, 0, 60, buf, strlen(buf));
+	TextOut(hdcMem, 0, 80, buf, strlen(buf));
 
 	BitBlt(hdc, 0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y, hdcMem, 0, 0, SRCCOPY);
 
