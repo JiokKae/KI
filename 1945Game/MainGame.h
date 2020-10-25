@@ -3,6 +3,7 @@
 
 class Tank;
 class Enemy;
+class Missile;
 class MainGame : public GameNode
 {
 private:
@@ -14,27 +15,24 @@ private:
 	HWND hWnd;
 	HINSTANCE hInstance;
 
-	// 줌 관련
-	int zoomStart;
-	int zooming;
-
 	// 프레임 관련
-	int frame;
 	int checkFrame;
 	int FPS;
-	float zoom = 1.0f;
 
 	// 렌더 관련
-	HBITMAP hbmMem, hbmMemOld;
+	HBITMAP hBitmapMem, hBitmapMemOld;
 	HDC hdc, hdcMem;
 	HDC hdc_BackGround;
 
-	// 드래그 관련
-	bool isDragging;
-	bool isMDragging;
-
+	// 탱크
 	Tank* tank1;
+
+	// 적
+	int numOfEnemy;
 	Enemy* enemy;
+
+	// 미사일
+	Missile* missile;
 
 public:
 	HRESULT Init(HINSTANCE hInst, HWND hWnd);
@@ -42,11 +40,7 @@ public:
 	void Update();
 	void Render(HDC hdc);
 
-	void PrintCos(float degree, float zoom);
-	void PrintSin(float degree, float zoom);
-	void PrintDegree(float degree, float zoom);
-	void PrintAtan2(float a, float b, float zoom);
-	
+	void SetEnemyWave(int num);
 
 	LRESULT MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);
 };

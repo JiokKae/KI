@@ -7,31 +7,33 @@ class Tank : public GameNode
 {
 private:
 	// 몸통 좌표, 크기
-	POINT pos;
+	POINTFLOAT pos;
 	float speed;
-	int size;
+	float size;
+	HPEN hPenOutline;
+	HBRUSH hBrushInside;
+	Allies aliies;
 
 	// 포신
 	POINTFLOAT barrelEnd;
 	int barrelSize;
 	float barrelAngle;
-
-	// 미사일
-	int numOfMissile;
-	int currentMissileCount;
-	Missile* missile;
+	float barrelSpeed;
 	int cooltime;
 	int shootFrame;
 
 public:
+	static int hitCount;
 	HRESULT Init();
 	void Release();
-	void Update(POINTFLOAT enemyPos, int enemySize);
+	void Update();
 	void Render(HDC hdc);
 
-	void Fire(POINTFLOAT enemyPos);
+	void Fire(POINTFLOAT enemyPos, Missile* missile);
 	void RotateBarrel(float angle);
 	void Move(POINTFLOAT delta);
 
+	POINTFLOAT GetPos();
+	float GetSize() { return size; }
 };
 

@@ -1,5 +1,4 @@
 ﻿#include "framework.h"
-#include "atanTest.h"
 #include "Resource.h"
 #include "MainGame.h"
 #include <cmath>
@@ -8,7 +7,7 @@
 // 전역 변수:
 HINSTANCE g_hInstance;
 HWND g_hWnd;
-LPSTR lpszTitle = (LPSTR)TEXT("아탄!");                  // 제목 표시줄 텍스트입니다.
+LPSTR lpszTitle = (LPSTR)TEXT("1945게임");                  // 제목 표시줄 텍스트입니다.
 MainGame game;
 int g_Frame;
 
@@ -31,6 +30,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		return FALSE;
 	}
 
+	game.Init(g_hInstance, g_hWnd);
+
 	// 기본 메시지 루프입니다:
 	MSG msg;
 	while (GetMessage(&msg, nullptr, 0, 0))
@@ -38,6 +39,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance
 		TranslateMessage(&msg);
 		DispatchMessage(&msg);
 	}
+
+	game.Release();
 
 	return (int)msg.wParam;
 }
@@ -64,8 +67,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 //   함수: InitInstance(HINSTANCE, int)
 //   용도: 인스턴스 핸들을 저장하고 주 창을 만듭니다.
-//   주석:이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고
-//        주 프로그램 창을 만든 다음 표시합니다.
+//   주석:이 함수를 통해 인스턴스 핸들을 전역 변수에 저장하고 주 프로그램 창을 만든 다음 표시합니다.
 BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	g_hWnd = CreateWindow(lpszTitle, lpszTitle, WS_OVERLAPPEDWINDOW,
@@ -85,6 +87,4 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	return game.MainProc(hWnd, message, wParam, lParam);
-
 }
-

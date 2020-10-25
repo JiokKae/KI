@@ -1,107 +1,132 @@
 #include "Tank.h"
 #include "Missile.h"
 
+int Tank::hitCount = 0;
 
 HRESULT Tank::Init()
 {
 	// 몸통
 	pos.x = WINDOW_SIZE_X / 2;
 	pos.y = WINDOW_SIZE_Y;
-	size = 100;
-	speed = 3;
+	size = 60;
+	speed = 6;
+	hPenOutline = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
+	hBrushInside = CreateSolidBrush(RGB(200, 200, 255));
+	aliies = Allies::PLAYER;
 
 	// 포신
-	barrelSize = 130;
-	barrelEnd.x = WINDOW_SIZE_X / 2;
-	barrelEnd.y = pos.y - barrelSize;
-	barrelAngle = 90.0f;	// degree : 0 ~ 360 / radian : 0 ~ 6.28
+	barrelSize = 60;
+	
+	barrelAngle += 90.0f * barrelSpeed;
+	barrelEnd.x = pos.x + cosf(RADIAN(barrelAngle)) * barrelSize;
+	barrelEnd.y = pos.y - sinf(RADIAN(barrelAngle)) * barrelSize;
+
+	barrelSpeed = 2.0f;
 	cooltime = 5;
-	shootFrame = 0;		/*
-		90 : 360 = x : 6.28
-		360 * x = 6.28 * 90
-
-		x = 90 * 6.28 / 360
-		x = 90 * PI / 180
-	*/
-
-
-	// 미사일
-	numOfMissile = 5000;
-	currentMissileCount = 0;
-	missile = new Missile[numOfMissile];
-	for (int i = 0; i < numOfMissile; i++)
-		missile[i].Init();
+	shootFrame = 0;
 
 	return S_OK;
 }
 
 void Tank::Release()
 {
-	for (int i = 0; i < numOfMissile; i++)
-		missile[i].Release();
-	delete[] missile;
+	// 몸통
+	DeleteObject(hPenOutline);
+	DeleteObject(hBrushInside);
 }
 
-void Tank::Update(POINTFLOAT enemyPos, int enemySize)
+void Tank::Update()
 {
-	if (missile)
+	if (this == nullptr)
+		return;
+
+	if (GetAsyncKeyState(KEY_W))
 	{
-		for (int i = 0; i < numOfMissile; i++)
-			missile[i].Update(enemyPos, enemySize);
+		Move({ 0,-1 });
 	}
+	if (GetAsyncKeyState(KEY_S))
+	{
+		Move({ 0,1 });
+	}
+	if (GetAsyncKeyState(KEY_A))
+	{
+		Move({ -1,0 });
+	}
+	if (GetAsyncKeyState(KEY_D))
+	{
+		Move({ 1,0 });
+	}
+	if (GetAsyncKeyState(VK_LEFT))
+	{
+		RotateBarrel(1);
+	}
+	if (GetAsyncKeyState(VK_RIGHT))
+	{
+		RotateBarrel(-1);
+	}
+	
 }
 
 void Tank::Render(HDC hdc)
 {
+	if (this == nullptr)
+		return;
+
 	// 몸통
-	//Rectangle(hdc, pos.x - (size / 2), pos.y - (size / 2),
-	//	pos.x + (size / 2), pos.y + (size / 2));
-	Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2), pos.x + (size / 2), pos.y + (size / 2));
+	HPEN hPenOld = (HPEN)SelectObject(hdc, hPenOutline);
+	HPEN hBrushOld = (HPEN)SelectObject(hdc, hBrushInside);
+	Ellipse(hdc, (int)(pos.x - (size / 2)), (int)(pos.y - (size / 2)), (int)(pos.x + (size / 2)), (int)(pos.y + (size / 2)));
 
 	// 포신
-	MoveToEx(hdc, pos.x, pos.y, NULL);
-	LineTo(hdc, barrelEnd.x, barrelEnd.y);
+	MoveToEx(hdc, (int)pos.x, (int)pos.y, NULL);
+	LineTo(hdc, (int)barrelEnd.x, (int)barrelEnd.y);
 
-	// 미사일
-	if (missile)
-	{
-		for (int i = 0; i < numOfMissile; i++)
-			missile[i].Render(hdc);
-	}
+	SelectObject(hdc, hPenOld);
+	SelectObject(hdc, hBrushOld);
 }
 
-void Tank::Fire(POINTFLOAT enemyPos)
+void Tank::Fire(POINTFLOAT enemyPos, Missile* missile)
 {
 	if (missile)
 	{
-		if (missile[currentMissileCount].GetIsFire() == false && shootFrame + cooltime < g_Frame)
+		if (missile[Missile::currentMissileCount].GetIsFire() == false && shootFrame + cooltime < g_Frame)
 		{
-			// 위치
-			missile[currentMissileCount].SetPos(barrelEnd);
-			// 각도
-			missile[currentMissileCount].SetAngle(barrelAngle);
-			// 상태
-			missile[currentMissileCount].SetIsFire(true);
-			currentMissileCount++;
-			if (currentMissileCount > numOfMissile - 1)
-				currentMissileCount = 0;
+			missile[Missile::currentMissileCount].Fired(Allies::PLAYER, barrelEnd, barrelAngle, Pattern::NONE);
+			Missile::currentMissileCount++;
+			if (Missile::currentMissileCount > Missile::numOfMissile - 1)
+				Missile::currentMissileCount = 0;
 			shootFrame = g_Frame;
 		}
-
 	}
 }
 
 void Tank::RotateBarrel(float angle)
 {
-	barrelAngle += angle;
+	barrelAngle += angle * barrelSpeed;
 
-	barrelEnd.x = pos.x + cosf(DEGREE(barrelAngle)) * barrelSize;
-	barrelEnd.y = pos.y - sinf(DEGREE(barrelAngle)) * barrelSize;
+	barrelEnd.x = pos.x + cosf(RADIAN(barrelAngle)) * barrelSize;
+	barrelEnd.y = pos.y - sinf(RADIAN(barrelAngle)) * barrelSize;
 }
 
 void Tank::Move(POINTFLOAT delta)
 {
 	pos.x += delta.x * speed;
 	pos.y += delta.y * speed;
+
+	if (pos.x < size / 2)
+		pos.x = size / 2;
+	else if (pos.x > WINDOW_SIZE_X - size / 2)
+		pos.x = WINDOW_SIZE_X - size / 2;
+
+	if (pos.y < size / 2)
+		pos.y = size / 2;
+	else if (pos.y > WINDOW_SIZE_Y - size / 2)
+		pos.y = WINDOW_SIZE_Y - size / 2;
+
 	RotateBarrel(0);
+}
+
+POINTFLOAT Tank::GetPos()
+{
+	return pos;
 }

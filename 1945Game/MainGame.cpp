@@ -1,26 +1,116 @@
 #include "framework.h"
 #include "MainGame.h"
 #include "Resource.h"
-#include "Enemy.h"
 #include "Tank.h"
+#include "Enemy.h"
+#include "Missile.h"
 #include <string>
 
 HRESULT MainGame::Init(HINSTANCE hInst, HWND hWnd)
 {
 	hInstance = hInst;
-	hTimer = (HANDLE)SetTimer(
-		hWnd,	// 윈도우의 핸들
-		0,		// 이벤트 아이디
-		10,		// 호출 주기 ( 뭐가 호출되는지? : WM_TIMER )
-		NULL);	// 호출할 함수를 등록
+	hTimer = (HANDLE)SetTimer(hWnd, 0, 1000 / 70, NULL);
+	hTimer2 = (HANDLE)SetTimer(hWnd, 1, 1000, NULL);
 
 	tank1 = new Tank();
 	tank1->Init();
 
-	enemy = new Enemy();
-	enemy->Init();
+	// 적
+	Enemy::currentEnemyCount = numOfEnemy = 1;
+	enemy = new Enemy[numOfEnemy];
+	
+	for (int i = 0; i < numOfEnemy; i++)
+		enemy[i].Init(tank1->GetPos());
+
+	// 미사일
+	Missile::numOfMissile = 5000;
+	Missile::currentMissileCount = 0;
+	missile = new Missile[Missile::numOfMissile];
+	for (int i = 0; i < Missile::numOfMissile; i++)
+		missile[i].Init();
 
 	return S_OK;
+}
+
+void MainGame::Update()
+{
+	for (int i = 0; i < numOfEnemy; i++)
+	{
+		enemy[i].Update(tank1->GetPos());
+		enemy[i].Fire(tank1->GetPos(), missile, (Pattern)(rand() % 6));
+	}
+
+	if (GetAsyncKeyState(VK_SPACE))
+	{
+		tank1->Fire(enemy->GetPos(), missile);
+	}
+	tank1->Update();
+
+	for (int i = 0; i < Missile::numOfMissile; i++)
+		missile[i].Update(enemy, numOfEnemy, tank1, 1, missile);
+	
+	if (Enemy::currentEnemyCount <= 0)
+		SetEnemyWave(numOfEnemy);
+}
+
+void MainGame::Render(HDC hdc)
+{
+	hBitmapMem = CreateCompatibleBitmap(hdc, WINDOW_SIZE_X, WINDOW_SIZE_Y);//3
+	hBitmapMemOld = (HBITMAP)SelectObject(hdcMem, hBitmapMem);//4
+
+	BitBlt(hdcMem, 0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y, hdc_BackGround, 0, 0, SRCCOPY);
+
+	// 탱크
+	tank1->Render(hdcMem);
+
+	// 적
+	for (int i = 0; i < numOfEnemy; i++)
+		enemy[i].Render(hdcMem);
+
+	// 미사일
+	if (missile)
+	{
+		for (int i = 0; i < Missile::numOfMissile; i++)
+			missile[i].Render(hdcMem);
+	}
+	
+	char buf[50];
+
+	wsprintf(buf, "g_Frame : %d", g_Frame);
+	TextOut(hdcMem, 0, 0, buf, strlen(buf));
+
+	wsprintf(buf, "X : %d, Y : %d", mouse.x, mouse.y);
+	TextOut(hdcMem, 0, 20, buf, strlen(buf));
+
+	wsprintf(buf, "FPS : %d", FPS);
+	TextOut(hdcMem, 0, 40, buf, strlen(buf));
+
+	wsprintf(buf, "적의 수 : %d / %d", Enemy::currentEnemyCount, numOfEnemy);
+	TextOut(hdcMem, 0, 60, buf, strlen(buf));
+
+	wsprintf(buf, "피격 횟수 : %d회", Tank::hitCount);
+	TextOut(hdcMem, 0, 60, buf, strlen(buf));
+
+	BitBlt(hdc, 0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y, hdcMem, 0, 0, SRCCOPY);
+
+	SelectObject(hdcMem, hBitmapMemOld); //-4
+	DeleteObject(hBitmapMem); //-3
+}
+
+void MainGame::SetEnemyWave(int num)
+{
+	if (enemy)
+	{
+		delete[] enemy;
+	}
+
+	enemy = new Enemy[num];
+	for (int i = 0; i < num; i++) {
+		enemy[i].Init(tank1->GetPos());
+		enemy[i].Appear();
+	}
+
+	numOfEnemy = Enemy::currentEnemyCount = num;
 }
 
 void MainGame::Release()
@@ -28,11 +118,21 @@ void MainGame::Release()
 	tank1->Release();
 	delete tank1;
 
-	enemy->Release();
-	delete enemy;
+	for (int i = 0; i < numOfEnemy; i++)
+		enemy[i].Release();
+	delete[] enemy;
+
+	for (int i = 0; i < Missile::numOfMissile; i++)
+		missile[i].Release();
+	delete[] missile;
 
 	// 타이머 삭제
 	KillTimer(hWnd, 0);
+	KillTimer(hWnd, 1);
+
+	// Object 삭제
+	DeleteObject(Enemy::hPenOutline);
+	DeleteObject(Enemy::hBrushInside);
 }
 
 LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -43,23 +143,22 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		switch (wParam)
 		{
 		case 0:
+			this->Update();
 			InvalidateRect(hWnd, NULL, false);
 			break;
 
 		case 1:
-			FPS = frame - checkFrame;
-			checkFrame = frame;
+			FPS = g_Frame - checkFrame;
+			checkFrame = g_Frame;
 			break;
 		}
 
 		break;
 
 	case WM_CREATE:
-		hTimer = (HANDLE)SetTimer(hWnd, 0, 1000 / 70, NULL);
-		hTimer2 = (HANDLE)SetTimer(hWnd, 1, 1000, NULL);
-
 		// 더블 버퍼
 		hdc = GetDC(hWnd);
+		hdcMem = CreateCompatibleDC(hdc); //2
 		hdc_BackGround = CreateCompatibleDC(hdc);
 		ReleaseDC(hWnd, hdc);
 		HBITMAP bitBackGround;
@@ -71,231 +170,27 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	case WM_MOUSEMOVE:
 		mouse.x = LOWORD(lParam);
 		mouse.y = HIWORD(lParam);
-		if (isDragging)
-		{
-			clickedMouse.x = LOWORD(lParam);
-			clickedMouse.y = HIWORD(lParam);
-		}
-		if (isMDragging)
-		{
-			zooming = mouse.y;
-			zoom += ((float)zooming - (float)zoomStart) / 200;
-			if (zoom < 0.005)
-				zoom = 0.005;
-			zoomStart = zooming;
-		}
-		break;
-
-	case WM_LBUTTONDOWN:
-		if (isDragging == false)
-		{
-			isDragging = true;
-			clickedMouse.x = LOWORD(lParam);
-			clickedMouse.y = HIWORD(lParam);
-		}
-		break;
-
-	case WM_LBUTTONUP:
-		if (isDragging == true)
-			isDragging = false;
-		break;
-
-	case WM_MBUTTONDOWN:
-		if (isMDragging == false)
-		{
-			zoomStart = mouse.y;
-			isMDragging = true;
-		}
-		break;
-
-	case WM_MBUTTONUP:
-		if (isMDragging == true)
-			isMDragging = false;
 		break;
 
 	case WM_PAINT:
 	{
 		PAINTSTRUCT ps;
-		HDC hdc;
 		hdc = BeginPaint(hWnd, &ps);
 
-		hdcMem = CreateCompatibleDC(hdc); //2
-		hbmMem = CreateCompatibleBitmap(hdc, WINDOW_SIZE_X, WINDOW_SIZE_Y);//3
-		hbmMemOld = (HBITMAP)SelectObject(hdcMem, hbmMem);//4
-
-		BitBlt(hdcMem, 0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y, hdc_BackGround, 0, 0, SRCCOPY);
-
-
-		Ellipse(hdcMem, 960, 508, 500 * zoom);
-
-		for (int i = 0; i < 20; i++)
-		{
-			if (i == 9)
-			{
-				HPEN hpen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-				HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-
-				MoveToEx(hdcMem, i * 100 + 60, 0, NULL);
-				LineTo(hdcMem, i * 100 + 60, WINDOW_SIZE_Y);
-
-				DeleteObject(SelectObject(hdcMem, hpenOld));
-
-			}
-			MoveToEx(hdcMem, i * 100 + 60, 0, NULL);
-			LineTo(hdcMem, i * 100 + 60, WINDOW_SIZE_Y);
-
-		}
-		for (int i = 0; i < 11; i++)
-		{
-			if (i == 5)
-			{
-				HPEN hpen = CreatePen(PS_SOLID, 3, RGB(0, 0, 0));
-				HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-
-				MoveToEx(hdcMem, 0, i * 100 + 8, NULL);
-				LineTo(hdcMem, WINDOW_SIZE_X, i * 100 + 8);
-
-				DeleteObject(SelectObject(hdcMem, hpenOld));
-
-			}
-
-			MoveToEx(hdcMem, 0, i * 100 + 8, NULL);
-			LineTo(hdcMem, WINDOW_SIZE_X, i * 100 + 8);
-		}
-
-		PrintCos((frame / 4) % 360, zoom);
-		PrintSin((frame / 4) % 360, zoom);
-		PrintDegree((frame / 4) % 360, zoom);
-		POINTFLOAT p = CoordToPlain(clickedMouse.x, clickedMouse.y, zoom);
-
-		PrintAtan2(p.x, p.y, zoom);
-
-		char buf[50];
-		wsprintf(buf, "%d", frame);
-		TextOut(hdcMem, 0, 0, buf, strlen(buf));
-
-		wsprintf(buf, "X : %d, Y : %d", mouse.x, mouse.y);
-		TextOut(hdcMem, 10, 30, buf, strlen(buf));
-
-
-
-		wsprintf(buf, "0, 0");
-		TextOut(hdcMem, 960 + 2, 508 + 2, buf, strlen(buf));
-
-		wsprintf(buf, "FPS : %d", FPS);
-		TextOut(hdcMem, 0, 50, buf, strlen(buf));
-
-		std::string s = "Zoom : " + std::to_string(zoom);
-		TextOut(hdcMem, 0, 70, s.c_str(), strlen(s.c_str()));
-
-		BitBlt(hdc, 0, 0, WINDOW_SIZE_X, WINDOW_SIZE_Y, hdcMem, 0, 0, SRCCOPY);
-
-		SelectObject(hdcMem, hbmMemOld); //-4
-		DeleteObject(hbmMem); //-3
-		DeleteDC(hdcMem); //-2
+		this->Render(hdc);
 
 		EndPaint(hWnd, &ps);
 		g_Frame++;
 	}
 	break;
+
 	case WM_DESTROY:
-		KillTimer(hWnd, 0);
 		DeleteDC(hdcMem); //-2
 		PostQuitMessage(0);
 		break;
+
 	default:
 		return DefWindowProc(hWnd, iMessage, wParam, lParam);
 	}
 	return 0;
 }
-
-void MainGame::PrintCos(float degree, float zoom)
-{
-	HPEN hpen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
-	HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, _T("궁서"));
-	HFONT hFontOld = (HFONT)SelectObject(hdcMem, hFont);
-	SetTextColor(hdcMem, RGB(255, 0, 0));
-	SetBkMode(hdcMem, TRANSPARENT);
-
-	MoveToEx(hdcMem, 960, 500 + 8, NULL);
-	LineTo(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960, 500 + 8);
-
-	std::string s = "cos(" + std::to_string(degree).substr(0, 4) + ") : " + std::to_string(cos(RADIAN(degree))).substr(0, 5) + ", 0";
-	TextOut(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960 + 2, 508 + 2, s.c_str(), strlen(s.c_str()));
-
-	SetTextColor(hdcMem, RGB(0, 0, 0));
-	DeleteObject(SelectObject(hdcMem, hpenOld));
-	DeleteObject(SelectObject(hdcMem, hFontOld));
-}
-
-void MainGame::PrintSin(float degree, float zoom)
-{
-	HPEN hpen = CreatePen(PS_SOLID, 3, RGB(0, 0, 255));
-	HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, _T("궁서"));
-	HFONT hFontOld = (HFONT)SelectObject(hdcMem, hFont);
-	SetTextColor(hdcMem, RGB(0, 0, 255));
-	SetBkMode(hdcMem, TRANSPARENT);
-
-	MoveToEx(hdcMem, 960, 500 + 8, NULL);
-	LineTo(hdcMem, 960, -sin(RADIAN(degree)) * 500 * zoom + 500 + 8);
-
-	std::string s = +"sin(" + std::to_string(degree).substr(0, 4) + ") : 0, " + std::to_string(sin(RADIAN(degree))).substr(0, 5);
-	TextOut(hdcMem, 960 + 2, -sin(RADIAN(degree)) * 500 * zoom + 508 + 2, s.c_str(), strlen(s.c_str()));
-
-	SetTextColor(hdcMem, RGB(0, 0, 0));
-	DeleteObject(SelectObject(hdcMem, hpenOld));
-	DeleteObject(SelectObject(hdcMem, hFontOld));
-}
-
-void MainGame::PrintDegree(float degree, float zoom)
-{
-	HPEN hpen = CreatePen(PS_SOLID, 3, RGB(255, 0, 255));
-	HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, _T("궁서"));
-	HFONT hFontOld = (HFONT)SelectObject(hdcMem, hFont);
-	SetTextColor(hdcMem, RGB(255, 0, 255));
-	SetBkMode(hdcMem, TRANSPARENT);
-
-	MoveToEx(hdcMem, 960, 500 + 8, NULL);
-	LineTo(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960, -sin(RADIAN(degree)) * 500 * zoom + 500 + 8);
-
-	DeleteObject(SelectObject(hdcMem, hpenOld));
-
-	MoveToEx(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960, 500 + 8, NULL);
-	LineTo(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960, -sin(RADIAN(degree)) * 500 * zoom + 500 + 8);
-
-	MoveToEx(hdcMem, 960, -sin(RADIAN(degree)) * 500 * zoom + 500 + 8, NULL);
-	LineTo(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960, -sin(RADIAN(degree)) * 500 * zoom + 500 + 8);
-
-	std::string s = std::to_string(cos(RADIAN(degree))).substr(0, 5) + ", " + std::to_string(sin(RADIAN(degree))).substr(0, 5) + "(각도 : " + std::to_string(degree).substr(0, 4) + ")";
-	TextOut(hdcMem, cos(RADIAN(degree)) * 500 * zoom + 960 + 2, -sin(RADIAN(degree)) * 500 * zoom + 508 + 2 + 30, s.c_str(), strlen(s.c_str()));
-
-	SetTextColor(hdcMem, RGB(0, 0, 0));
-
-	DeleteObject(SelectObject(hdcMem, hFontOld));
-}
-
-void MainGame::PrintAtan2(float a, float b, float zoom)
-{
-	HPEN hpen = CreatePen(PS_SOLID, 3, RGB(0, 180, 0));
-	HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
-	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, _T("궁서"));
-	HFONT hFontOld = (HFONT)SelectObject(hdcMem, hFont);
-	SetTextColor(hdcMem, RGB(0, 180, 0));
-	SetBkMode(hdcMem, TRANSPARENT);
-
-	MoveToEx(hdcMem, 960, 500 + 8, NULL);
-	LineTo(hdcMem, a * 500 * zoom + 960, -b * 500 * zoom + 500 + 8);
-
-	std::string s = std::to_string(a).substr(0, 5) + ", " + std::to_string(b).substr(0, 5) + "(각도(atan2) : " + std::to_string(DEGREE(atan2(-b, a))) + ")";
-	//std::string s = std::to_string(a).substr(0, 5) + ", " + std::to_string(b).substr(0, 5) + "(각도(atan2) : " + std::to_string(DEGREE(atan(-b/a))) + ")";
-
-	TextOut(hdcMem, a * 500 * zoom + 960 + 2, -b * 500 * zoom + 508 + 2, s.c_str(), strlen(s.c_str()));
-
-	SetTextColor(hdcMem, RGB(0, 0, 0));
-	DeleteObject(SelectObject(hdcMem, hpenOld));
-	DeleteObject(SelectObject(hdcMem, hFontOld));
-}
-

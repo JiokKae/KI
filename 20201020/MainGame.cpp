@@ -7,7 +7,7 @@
 
 inline bool Collision(Missile missile, Enemy enemy)
 {
-	return Distance(missile.GetPos(), enemy.GetPos()) < (enemy.GetSize() / 2 + missile.GetSize() / 2);
+	return Distance(missile.GetPos(), enemy.GetPos()) < ((enemy.GetSize() / 2) + (missile.GetSize() / 2));
 }
 
 HRESULT MainGame::Init(HINSTANCE hInst)
