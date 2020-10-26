@@ -11,13 +11,20 @@ private:
 	float speed;
 	bool isFire;
 	float angle;
+	
 	Enemy* target;
 	float followRatio;
 
+	// 현재 방향
 	POINTFLOAT barrelEnd;
 	int barrelSize;
 	float barrelAngle;
 
+	// 과거 방향
+	POINTFLOAT barrelEnd2;
+	int barrelSize2;
+	float barrelAngle2;
+	float angle2;
 public:
 	HRESULT Init();
 	void Release();
@@ -32,9 +39,16 @@ public:
 
 	float GetSize() { return size; }
 
-	void SetAngle(float angle) { this->angle = angle; }
+	float GetAngle() { return angle; }
+	void SetAngle(float angle) 
+	{ 
+		this->angle2 = this->angle;
+		this->angle = angle; 
+	}
 
 	void SetTarget(Enemy* target) { this->target = target; }
+
+	void Move(float angle, float distance);
 
 	Missile();
 	~Missile();

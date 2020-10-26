@@ -23,7 +23,7 @@ HRESULT Tank::Init()
 	barrelSize = 150;
 	barrelEnd.x = WINSIZE_X / 2;
 	barrelEnd.y = WINSIZE_Y - barrelSize;
-	barrelAngle = 90.0f;		// 단위 : degree(0 ~ 360), radian(0 ~ 6.28)
+	barrelAngle = -90.0f;		// 단위 : degree(0 ~ 360), radian(0 ~ 6.28)
 
 	//90 : 360 = x : 6.28
 
@@ -31,9 +31,9 @@ HRESULT Tank::Init()
 	//	x = DegreeToRadian(90);
 
 	// 미사일
-	numOfMissile = 5;
+	numOfMissile = 20;
 	currentMissileCount = 0;
-	missile = new Missile[5];
+	missile = new Missile[numOfMissile];
 	for (int i = 0; i < numOfMissile; i++)
 		missile[i].Init();
 	
@@ -88,9 +88,19 @@ void Tank::LatedUpdate()
 				if (distance < missile[i].GetSize() / 2 + missile[j].GetSize() / 2)
 				{
 					float iangle = DEGREE(atan2f(missile[i].GetPos().y - missile[j].GetPos().y, missile[i].GetPos().x - missile[j].GetPos().x));
+					//missile[i].Move(iangle, (missile[i].GetSize() / 2 + missile[j].GetSize() / 2 - distance));
+					//if (iangle < 0)
+					//	iangle += 360;
 					float jangle = DEGREE(atan2f(missile[j].GetPos().y - missile[i].GetPos().y, missile[j].GetPos().x - missile[i].GetPos().x));
+					//missile[i].Move(jangle, (missile[i].GetSize() / 2 + missile[j].GetSize() / 2 - distance));
+					//if (jangle < 0)
+					//	jangle += 360;
+					//missile[i].SetAngle((iangle + missile[i].GetAngle()) / 2);
+					//missile[j].SetAngle((jangle + missile[j].GetAngle()) / 2);
+
 					missile[i].SetAngle(iangle);
 					missile[j].SetAngle(jangle);
+
 				}
 			}
 			
@@ -139,11 +149,11 @@ void Tank::Dead()
 
 void Tank::RotateBarrel(float angle)
 {
-	barrelAngle += angle;
+	barrelAngle -= angle;
 	barrelEnd.x = WINSIZE_X / 2
 		+ cosf(RADIAN(barrelAngle)) * barrelSize;
 	barrelEnd.y = WINSIZE_Y
-		- sinf(RADIAN(barrelAngle)) * barrelSize;
+		+ sinf(RADIAN(barrelAngle)) * barrelSize;
 }
 
 void Tank::SetTarget(Enemy * target)

@@ -76,15 +76,6 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		InvalidateRect(g_hWnd, NULL, true);
 		break;
 
-	case WM_RBUTTONDOWN:
-		
-		InvalidateRect(g_hWnd, NULL, true);
-		break;
-
-	case WM_LBUTTONUP:
-		InvalidateRect(g_hWnd, NULL, true);
-		break;
-
 	case WM_LBUTTONDOWN:
 		mouseData.clickedPosX = LOWORD(lParam);
 		mouseData.clickedPosY = HIWORD(lParam);
