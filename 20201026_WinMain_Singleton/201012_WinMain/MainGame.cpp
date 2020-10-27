@@ -1,6 +1,7 @@
 #include "MainGame.h"
 #include "Tank.h"
 #include "Enemy.h"
+#include "resource.h"
 
 HRESULT MainGame::Init()
 {
@@ -35,24 +36,34 @@ void MainGame::Update()
 	//if(enemy1)
 	//	enemy1->Update();
 
-	InvalidateRect(g_hWnd, NULL, true);
+	InvalidateRect(g_hWnd, NULL, false);
 }
 
 void MainGame::Render(HDC hdc)
 {
+	hBitmapMem = CreateCompatibleBitmap(hdc, WINSIZE_X, WINSIZE_Y);//3
+	hBitmapMemOld = (HBITMAP)SelectObject(hdcMem, hBitmapMem);//4
+
+	BitBlt(hdcMem, 0, 0, WINSIZE_X, WINSIZE_Y, hdc_BackGround, 0, 0, SRCCOPY);
+
 	if(tank1)
-		tank1->Render(hdc);
+		tank1->Render(hdcMem);
 	if(enemy1)
-		enemy1->Render(hdc);
+		enemy1->Render(hdcMem);
 
 	char szText[128] = "";
 
 	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);
-	TextOut(hdc, 10, 5, szText, strlen(szText));
+	TextOut(hdcMem, 10, 5, szText, strlen(szText));
 
 	wsprintf(szText, "Clicked X : %d, Y : %d",
 		mouseData.clickedPosX, mouseData.clickedPosY);
-	TextOut(hdc, 10, 30, szText, strlen(szText));
+	TextOut(hdcMem, 10, 30, szText, strlen(szText));
+
+	BitBlt(hdc, 0, 0, WINSIZE_X, WINSIZE_Y, hdcMem, 0, 0, SRCCOPY);
+
+	SelectObject(hdcMem, hBitmapMemOld); //-4
+	DeleteObject(hBitmapMem); //-3
 }
 
 LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -60,10 +71,17 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	switch (iMessage)
 	{
 	case WM_CREATE:
-		hTimer = (HANDLE)SetTimer(hWnd,	// 윈도우 핸들
-			0,			// 이벤트 아이디
-			1000/70,		// 호출 주기 ( 뭘 호출할까? )
-			NULL);		// 호출 함수 포인터
+		hTimer = (HANDLE)SetTimer(hWnd,	0, 1000/70, NULL);
+
+		// 더블 버퍼
+		hdc = GetDC(hWnd);
+		hdcMem = CreateCompatibleDC(hdc); //2
+		hdc_BackGround = CreateCompatibleDC(hdc);
+		ReleaseDC(hWnd, hdc);
+		HBITMAP bitBackGround;
+		bitBackGround = LoadBitmap(g_hInstance, MAKEINTRESOURCE(IDB_BITMAP1));
+		SelectObject(hdc_BackGround, bitBackGround);
+		DeleteObject(bitBackGround);
 		break;
 	case WM_TIMER:
 		this->Update();
@@ -73,14 +91,12 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		mouseData.mousePosX = LOWORD(lParam);
 		mouseData.mousePosY = HIWORD(lParam);
 
-		InvalidateRect(g_hWnd, NULL, true);
 		break;
 
 	case WM_LBUTTONDOWN:
 		mouseData.clickedPosX = LOWORD(lParam);
 		mouseData.clickedPosY = HIWORD(lParam);
 
-		InvalidateRect(g_hWnd, NULL, true);
 		break;
 
 	case WM_PAINT:

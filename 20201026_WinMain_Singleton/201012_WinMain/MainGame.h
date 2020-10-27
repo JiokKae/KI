@@ -19,7 +19,15 @@ private:
 		int clickedPosX, clickedPosY;
 	};
 
-	HDC hdc;
+	// 윈도우 관련
+	HWND hWnd;
+	HINSTANCE hInstance;
+
+	// 렌더 관련
+	HBITMAP hBitmapMem, hBitmapMemOld;
+	HDC hdc, hdcMem;
+	HDC hdc_BackGround;
+	
 	PAINTSTRUCT ps;
 	HANDLE hTimer;
 	MOUSE_DATA mouseData;

@@ -53,6 +53,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "1945Game", "1945Game\1945Ga
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "20201026_WinMain_Singleton", "20201026_WinMain_Singleton\201012_WinMain\201012_WinMain.vcxproj", "{DF4A49B0-A716-4035-80FF-35B107A62670}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ARKANOID", "ARKANOID\ARKANOID.vcxproj", "{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -245,6 +247,14 @@ Global
 		{DF4A49B0-A716-4035-80FF-35B107A62670}.Release|x64.Build.0 = Release|x64
 		{DF4A49B0-A716-4035-80FF-35B107A62670}.Release|x86.ActiveCfg = Release|Win32
 		{DF4A49B0-A716-4035-80FF-35B107A62670}.Release|x86.Build.0 = Release|Win32
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Debug|x64.ActiveCfg = Debug|x64
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Debug|x64.Build.0 = Debug|x64
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Debug|x86.ActiveCfg = Debug|Win32
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Debug|x86.Build.0 = Debug|Win32
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Release|x64.ActiveCfg = Release|x64
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Release|x64.Build.0 = Release|x64
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Release|x86.ActiveCfg = Release|Win32
+		{9EDA866E-E0AD-48BE-8066-FDE0B99FE814}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

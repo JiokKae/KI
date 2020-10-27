@@ -81,8 +81,8 @@ void Missile::Render(HDC hdc)
 
 		DeleteObject(SelectObject(hdc, hPenOld));
 
-		MoveToEx(hdc, pos.x, pos.y, NULL);
-		LineTo(hdc, barrelEnd2.x, barrelEnd2.y);
+		//MoveToEx(hdc, pos.x, pos.y, NULL);
+		//LineTo(hdc, barrelEnd2.x, barrelEnd2.y);
 	}
 }
 
