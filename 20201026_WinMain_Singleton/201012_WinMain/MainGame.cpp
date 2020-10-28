@@ -2,7 +2,7 @@
 #include "Tank.h"
 #include "Enemy.h"
 #include "resource.h"
-
+#include "Image.h"
 HRESULT MainGame::Init()
 {
 	KeyManager::GetSingleton()->Init();
@@ -15,6 +15,13 @@ HRESULT MainGame::Init()
 
 	//tank1->SetTarget(enemy1);
 
+	emptyImage = new Image[2];
+	for (int i = 0; i < 2; i++)
+		emptyImage[i].Init(300, 300);
+
+	imagePos[0] = { 800, 300 };
+	imagePos[1] = { 800, 800 };
+
 	return S_OK;
 }
 
@@ -25,6 +32,11 @@ void MainGame::Release()
 
 	enemy1->Release();
 	delete enemy1;
+
+	for (int i = 0; i < 2; i++)
+		emptyImage[i].Release();
+
+	delete[] emptyImage;
 
 	KeyManager::GetSingleton()->Release();
 }
@@ -60,6 +72,16 @@ void MainGame::Render(HDC hdc)
 		mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(hdcMem, 10, 30, szText, strlen(szText));
 
+	if(emptyImage)
+		for (int i = 0; i < 2; i++) 
+		{
+			emptyImage[i].Render(hdcMem, imagePos[i].x++, imagePos[i].y++);
+			if (imagePos[i].x > WINSIZE_X)
+				imagePos[i].x = 0;
+			if (imagePos[i].y > WINSIZE_Y)
+				imagePos[i].y = 0;
+		}
+		
 	BitBlt(hdc, 0, 0, WINSIZE_X, WINSIZE_Y, hdcMem, 0, 0, SRCCOPY);
 
 	SelectObject(hdcMem, hBitmapMemOld); //-4

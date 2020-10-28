@@ -139,12 +139,13 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 			LineTo(hdcMem, WINDOW_SIZE_X, i * 100 + 8);
 		}
 
-		PrintCos((frame / 4) % 360, zoom);
-		PrintSin((frame / 4) % 360, zoom);
-		PrintDegree((frame / 4) % 360, zoom);
+		float angle = 45;
+		PrintCos(angle, zoom);
+		PrintSin(angle, zoom);
+		PrintDegree(angle, zoom);
 		POINTFLOAT p = CoordToPlain(clickedMouse.x, clickedMouse.y, zoom);
 
-		PrintAtan2(p.x, p.y, zoom);
+		PrintAsin(p.x, p.y, zoom);
 
 		char buf[50];
 		wsprintf(buf, "%d", frame);
@@ -153,7 +154,7 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		wsprintf(buf, "X : %d, Y : %d", mouse.x, mouse.y);
 		TextOut(hdcMem, 10, 30, buf, strlen(buf));
 
-
+		
 
 		wsprintf(buf, "0, 0");
 		TextOut(hdcMem, 960 + 2, 508 + 2, buf, strlen(buf));
@@ -275,3 +276,24 @@ void MainGame::PrintAtan2(float a, float b, float zoom)
 	DeleteObject(SelectObject(hdcMem, hFontOld));
 }
 
+void MainGame::PrintAsin(float a, float b, float zoom)
+{
+	HPEN hpen = CreatePen(PS_SOLID, 3, RGB(0, 180, 0));
+	HPEN hpenOld = (HPEN)SelectObject(hdcMem, hpen);
+	HFONT hFont = CreateFont(30, 0, 0, 0, 0, 0, 0, 0, HANGEUL_CHARSET, 3, 2, 1, VARIABLE_PITCH | FF_ROMAN, _T("궁서"));
+	HFONT hFontOld = (HFONT)SelectObject(hdcMem, hFont);
+	SetTextColor(hdcMem, RGB(0, 180, 0));
+	SetBkMode(hdcMem, TRANSPARENT);
+
+	MoveToEx(hdcMem, 960, 500 + 8, NULL);
+	LineTo(hdcMem, a * 500 * zoom + 960, -b * 500 * zoom + 500 + 8);
+
+	std::string s = std::to_string(a).substr(0, 5) + ", " + std::to_string(b).substr(0, 5) + "(각도(asin) : " + std::to_string(DEGREE(asin(b))) + ")";
+	//std::string s = std::to_string(a).substr(0, 5) + ", " + std::to_string(b).substr(0, 5) + "(각도(atan2) : " + std::to_string(DEGREE(atan(-b/a))) + ")";
+
+	TextOut(hdcMem, a * 500 * zoom + 960 + 2, -b * 500 * zoom + 508 + 2, s.c_str(), strlen(s.c_str()));
+
+	SetTextColor(hdcMem, RGB(0, 0, 0));
+	DeleteObject(SelectObject(hdcMem, hpenOld));
+	DeleteObject(SelectObject(hdcMem, hFontOld));
+}

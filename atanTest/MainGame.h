@@ -41,6 +41,7 @@ public:
 	void PrintSin(float degree, float zoom);
 	void PrintDegree(float degree, float zoom);
 	void PrintAtan2(float a, float b, float zoom);
+	void PrintAsin(float a, float b, float zoom);
 	
 
 	LRESULT MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam);

@@ -19,6 +19,9 @@
     <Filter Include="MainGame">
       <UniqueIdentifier>{696b0731-2ea7-40fb-b353-dd2627bc66b8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="2DFrameWork\Manager">
+      <UniqueIdentifier>{23e076a6-60b1-4fff-9235-d897a3847f8a}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -40,6 +43,9 @@
       <Filter>MainGame</Filter>
     </ClCompile>
     <ClCompile Include="KeyManager.cpp">
+      <Filter>2DFrameWork</Filter>
+    </ClCompile>
+    <ClCompile Include="Image.cpp">
       <Filter>2DFrameWork</Filter>
     </ClCompile>
   </ItemGroup>
@@ -70,6 +76,9 @@
     </ClInclude>
     <ClInclude Include="resource.h">
       <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>2DFrameWork</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

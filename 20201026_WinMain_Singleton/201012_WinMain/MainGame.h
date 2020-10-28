@@ -10,6 +10,7 @@
 
 class Tank;
 class Enemy;
+class Image;
 class MainGame : public GameNode
 {
 private:
@@ -35,6 +36,10 @@ private:
 	Tank* tank1;
 	Enemy* enemy1;
 
+	// 이미지
+	Image* emptyImage;
+	POINT imagePos[2];
+	
 public:
 	HRESULT Init();				// 멤버 변수 초기화, 메모리 할당
 	void Release();				// 메모리 해제
