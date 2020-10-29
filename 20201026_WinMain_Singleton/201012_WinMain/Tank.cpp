@@ -31,7 +31,7 @@ HRESULT Tank::Init()
 	//	x = DegreeToRadian(90);
 
 	// πÃªÁ¿œ
-	numOfMissile = 20;
+	numOfMissile = 500;
 	currentMissileCount = 0;
 	missile = new Missile[numOfMissile];
 	for (int i = 0; i < numOfMissile; i++)

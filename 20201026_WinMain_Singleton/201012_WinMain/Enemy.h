@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "GameNode.h"
 
+class Image;
 class Enemy : public GameNode
 {
 private:
@@ -9,6 +10,7 @@ private:
 	POINTFLOAT pos;
 	float speed;
 	bool isDead;
+	Image* image;
 
 public:
 	HRESULT Init();		

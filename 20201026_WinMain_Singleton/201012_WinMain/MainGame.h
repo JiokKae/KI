@@ -39,7 +39,15 @@ private:
 	// 이미지
 	Image* emptyImage;
 	POINT imagePos[2];
+	Image* fileImage;
+	Image* ioriAni;
+	Image* backbuffer;
+	Image* backGround;
 	
+	bool isInit = false;
+
+	int x[8] = { };
+
 public:
 	HRESULT Init();				// 멤버 변수 초기화, 메모리 할당
 	void Release();				// 메모리 해제

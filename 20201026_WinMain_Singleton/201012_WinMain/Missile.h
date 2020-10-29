@@ -3,6 +3,7 @@
 #include "GameNode.h"
 
 class Enemy;
+class Image;
 class Missile : public GameNode
 {
 private:
@@ -25,6 +26,8 @@ private:
 	int barrelSize2;
 	float barrelAngle2;
 	float angle2;
+
+	Image* image;
 public:
 	HRESULT Init();
 	void Release();

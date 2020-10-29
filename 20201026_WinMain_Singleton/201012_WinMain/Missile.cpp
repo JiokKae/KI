@@ -1,10 +1,10 @@
 #include "Missile.h"
 #include "Enemy.h"
-
+#include "Image.h"
 
 HRESULT Missile::Init()
 {
-	size = 100;
+	size = 50 + rand() % 200;
 	pos.x = 0;
 	pos.y = 0;
 	speed = 5.0f;
@@ -23,11 +23,21 @@ HRESULT Missile::Init()
 	barrelEnd2.x = pos.x;
 	barrelEnd2.y = pos.y;
 	barrelAngle2 = angle;
+
+	image = new Image();
+	if (FAILED(image->Init("Image/cookie.bmp", size, size, true, RGB(255, 0, 255))))
+	{
+		// 예외처리
+		MessageBox(g_hWnd, "파일로부터 비트맵 생성에 실패했습니다.", "실패", MB_OK);
+	}
+
+
 	return S_OK;
 }
 
 void Missile::Release()
 {
+	delete image;
 }
 
 void Missile::Update()
@@ -70,14 +80,18 @@ void Missile::Render(HDC hdc)
 {
 	if (isFire)
 	{
-		Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2),
-			pos.x + (size / 2), pos.y + (size / 2));
+		if (image)
+		{
+			image->Render(hdc, pos.x - (size / 2), pos.y - (size / 2));
+		}
+//		Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2),
+//			pos.x + (size / 2), pos.y + (size / 2));
 
 		HPEN hPen = CreatePen(PS_SOLID, 3, RGB(255, 0, 0));
 		HPEN hPenOld = (HPEN)SelectObject(hdc, hPen);
 
-		MoveToEx(hdc, pos.x, pos.y, NULL);
-		LineTo(hdc, barrelEnd.x, barrelEnd.y);
+//		MoveToEx(hdc, pos.x, pos.y, NULL);
+//		LineTo(hdc, barrelEnd.x, barrelEnd.y);
 
 		DeleteObject(SelectObject(hdc, hPenOld));
 

@@ -10,8 +10,8 @@ HRESULT MainGame::Init()
 	tank1 = new Tank();
 	tank1->Init();
 
-	//enemy1 = new Enemy();
-	//enemy1->Init();
+	enemy1 = new Enemy();
+	enemy1->Init();
 
 	//tank1->SetTarget(enemy1);
 
@@ -21,6 +21,31 @@ HRESULT MainGame::Init()
 
 	imagePos[0] = { 800, 300 };
 	imagePos[1] = { 800, 800 };
+
+	fileImage = new Image();
+	if (FAILED(fileImage->Init("Image/구슬.bmp", 300, 300)))
+	{
+		// 예외처리
+		MessageBox(g_hWnd, "파일로부터 비트맵 생성에 실패했습니다.", "실패", MB_OK);
+	}
+	
+	ioriAni = new Image();
+	if (FAILED(ioriAni->Init("Image/Iori_walk.bmp", 612, 104, true, RGB(255,0,255), true, 9)))
+	{
+		// 예외처리
+		MessageBox(g_hWnd, "파일로부터 비트맵 생성에 실패했습니다.", "실패", MB_OK);
+	}
+	backbuffer = new Image();
+	backbuffer->Init(WINSIZE_X, WINSIZE_Y);
+	
+	backGround = new Image();
+	if (FAILED(backGround->Init("Image/mapImage.bmp", WINSIZE_X, WINSIZE_Y)))
+	{
+		// 예외처리
+		MessageBox(g_hWnd, "파일로부터 비트맵 생성에 실패했습니다.", "실패", MB_OK);
+	}
+
+	isInit = true;
 
 	return S_OK;
 }
@@ -35,33 +60,37 @@ void MainGame::Release()
 
 	for (int i = 0; i < 2; i++)
 		emptyImage[i].Release();
-
 	delete[] emptyImage;
 
+	fileImage->Release();
+	delete fileImage;
+
+	ioriAni->Release();
+	delete ioriAni;
+
+	backbuffer->Release();
+	delete backbuffer;
+
+	backGround->Release();
+	delete backGround;
 	KeyManager::GetSingleton()->Release();
 }
 
 void MainGame::Update()
 {
-	if(tank1)
-		tank1->Update();
-	//if(enemy1)
-	//	enemy1->Update();
+	tank1->Update();
+	enemy1->Update();
 
 	InvalidateRect(g_hWnd, NULL, false);
 }
 
 void MainGame::Render(HDC hdc)
 {
-	hBitmapMem = CreateCompatibleBitmap(hdc, WINSIZE_X, WINSIZE_Y);//3
-	hBitmapMemOld = (HBITMAP)SelectObject(hdcMem, hBitmapMem);//4
+	HDC hdcMem =  backbuffer->GetHMemDC();
+	backGround->Render(hdcMem, 0, 0);
 
-	BitBlt(hdcMem, 0, 0, WINSIZE_X, WINSIZE_Y, hdc_BackGround, 0, 0, SRCCOPY);
-
-	if(tank1)
-		tank1->Render(hdcMem);
-	if(enemy1)
-		enemy1->Render(hdcMem);
+	tank1->Render(hdcMem);
+	enemy1->Render(hdcMem);
 
 	char szText[128] = "";
 
@@ -72,20 +101,21 @@ void MainGame::Render(HDC hdc)
 		mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(hdcMem, 10, 30, szText, strlen(szText));
 
-	if(emptyImage)
-		for (int i = 0; i < 2; i++) 
-		{
-			emptyImage[i].Render(hdcMem, imagePos[i].x++, imagePos[i].y++);
-			if (imagePos[i].x > WINSIZE_X)
-				imagePos[i].x = 0;
-			if (imagePos[i].y > WINSIZE_Y)
-				imagePos[i].y = 0;
-		}
-		
-	BitBlt(hdc, 0, 0, WINSIZE_X, WINSIZE_Y, hdcMem, 0, 0, SRCCOPY);
-
-	SelectObject(hdcMem, hBitmapMemOld); //-4
-	DeleteObject(hBitmapMem); //-3
+	for (int i = 0; i < 2; i++) 
+	{
+		emptyImage[i].Render(hdcMem, imagePos[i].x++, imagePos[i].y++);
+		if (imagePos[i].x > WINSIZE_X)
+			imagePos[i].x = 0;
+		if (imagePos[i].y > WINSIZE_Y)
+			imagePos[i].y = 0;
+	}
+	for (int i = 0; i < 8; i++)
+	{
+		ioriAni->Render(hdcMem, 700 + (90 + 10 * x[i]%9 + 100 * sin(x[i] / 40.0f)) * i, 100,  1 + 1 * i , x[i]++/2 % 9);
+		ioriAni->Render(hdcMem, 700 - (90 + 10 * x[i]%9 + 100 * sin(x[i] / 40.0f)) * i, 100,  1 + 1 * i , x[i]++/2 % 9);
+	}
+	
+	backbuffer->Render(hdc, 0, 0);
 }
 
 LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)
@@ -105,8 +135,10 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		SelectObject(hdc_BackGround, bitBackGround);
 		DeleteObject(bitBackGround);
 		break;
+
 	case WM_TIMER:
-		this->Update();
+		if(isInit)	
+			this->Update();
 		break;
 
 	case WM_MOUSEMOVE:
@@ -123,8 +155,8 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 
 	case WM_PAINT:
 		hdc = BeginPaint(g_hWnd, &ps);
-
-		this->Render(hdc);
+		if (isInit)
+			this->Render(hdc);
 
 		EndPaint(g_hWnd, &ps);
 		break;
