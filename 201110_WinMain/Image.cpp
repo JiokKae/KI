@@ -112,7 +112,7 @@ void Image::Release()
 
 }
 
-void Image::Render(HDC hdc, int destX, int destY)
+void Image::Render(HDC hdc, int destX, int destY, int sizeX, int sizeY)
 {
 	imageInfo->x = destX - (imageInfo->width / 2);
 	imageInfo->y = destY - (imageInfo->height / 2);
@@ -122,7 +122,7 @@ void Image::Render(HDC hdc, int destX, int destY)
 		GdiTransparentBlt(
 			hdc,
 			destX, destY,
-			imageInfo->width, imageInfo->height,
+			sizeX, sizeY,
 
 			imageInfo->hMemDC,
 			0, 0,

@@ -1,13 +1,17 @@
 #pragma once
 #include "GameNode.h"
+#include "pch.h"
 #include <vector>
 
 class Missile;
-class MissileManager : public GameNode
+enum class Allies;
+enum class Pattern;
+class MissileManager : public Singleton<MissileManager>
 {
 	vector<Missile*> vecMissiles;
 	vector<Missile*> ::iterator itMissiles;
-	int missileMax;
+	int maxMissileCount;
+	int currentMissileCount;
 
 public:
 	HRESULT Init();
@@ -15,5 +19,7 @@ public:
 	void Update();
 	void Render(HDC hdc);
 
-	void AddMissile(float posX, float posY);
+	int GetMissileCount();
+
+	void AddMissile(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size = 30.0f, float speed = 10.0f);
 };

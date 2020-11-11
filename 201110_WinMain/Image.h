@@ -82,7 +82,7 @@ public:
 	// 메모리 해제
 	void Release();
 
-	void Render(HDC hdc, int destX, int destY);
+	void Render(HDC hdc, int destX, int destY, int sizeX, int sizeY);
 	void FrameRender(HDC hdc, int destX, int destY, int currFrameX, int currFrameY);
 
 	HDC GetMemDC() { return imageInfo->hMemDC; }

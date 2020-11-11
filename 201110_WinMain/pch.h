@@ -2,19 +2,36 @@
 
 #include <Windows.h>
 #include <math.h>
+#include <string>
 #include "KeyManager.h"
+#include "ImageManager.h"
+#include "MissileManager.h"
 
 #define WINSIZE_X	600
 #define WINSIZE_Y	800
 #define PI			3.141592f
-#define DegreeToRadian(x)	(x * PI / 180.0f)
-#define RadianToDegree(x)	(x * 180.0f / PI)
+#define RADIAN(x)	(x * PI / 180.0f)
+#define DEGREE(x)	(x * 180.0f / PI)
 
-struct FPOINT
-{
-	float x;
-	float y;
+enum class Allies {
+	PLAYER,
+	ENEMY,
+	END
+};
+
+enum class Pattern {
+	NONE,
+	FIREWORK,
+	ARROW,
+	SHOTGUN,
+	NEWS,
+	HURRICANE,
+	STOP,
+	STOPSHOTGUN,
+	RANDOM,
+	END
 };
 
 extern HWND g_hWnd;
 extern HINSTANCE g_hInstance;
+extern int g_frame;

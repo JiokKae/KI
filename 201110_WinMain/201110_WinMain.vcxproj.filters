@@ -1,0 +1,96 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="GameNode.cpp">
+      <Filter>2DFrameWork</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyManager.cpp">
+      <Filter>2DFrameWork</Filter>
+    </ClCompile>
+    <ClCompile Include="Enemy.cpp">
+      <Filter>MainGame\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="EnemyManager.cpp">
+      <Filter>MainGame\Enemy</Filter>
+    </ClCompile>
+    <ClCompile Include="MainGame.cpp">
+      <Filter>MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Missile.cpp">
+      <Filter>MainGame\Missile</Filter>
+    </ClCompile>
+    <ClCompile Include="MissileManager.cpp">
+      <Filter>MainGame\Missile</Filter>
+    </ClCompile>
+    <ClCompile Include="Image.cpp">
+      <Filter>2DFrameWork</Filter>
+    </ClCompile>
+    <ClCompile Include="Ship.cpp">
+      <Filter>MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
+      <Filter>소스 파일</Filter>
+    </ClCompile>
+    <ClCompile Include="ImageManager.cpp">
+      <Filter>2DFrameWork</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="GameNode.h">
+      <Filter>2DFrameWork</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyManager.h">
+      <Filter>2DFrameWork</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>2DFrameWork</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>MainGame\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="EnemyManager.h">
+      <Filter>MainGame\Enemy</Filter>
+    </ClInclude>
+    <ClInclude Include="MainGame.h">
+      <Filter>MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="Missile.h">
+      <Filter>MainGame\Missile</Filter>
+    </ClInclude>
+    <ClInclude Include="MissileManager.h">
+      <Filter>MainGame\Missile</Filter>
+    </ClInclude>
+    <ClInclude Include="Image.h">
+      <Filter>2DFrameWork</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>헤더 파일</Filter>
+    </ClInclude>
+    <ClInclude Include="Ship.h">
+      <Filter>MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="ImageManager.h">
+      <Filter>2DFrameWork</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="2DFrameWork">
+      <UniqueIdentifier>{da82f846-46c9-4db0-9614-7a4861c6b151}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainGame">
+      <UniqueIdentifier>{963eadef-ff46-433f-8e17-62d314ab498d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainGame\Enemy">
+      <UniqueIdentifier>{60ebade7-7441-4abc-b7ae-17745937647c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainGame\Missile">
+      <UniqueIdentifier>{f5c6356f-8bec-472c-a81c-3e3ef6560a15}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="헤더 파일">
+      <UniqueIdentifier>{60397d45-b950-4148-9e3f-08e0e306013d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="소스 파일">
+      <UniqueIdentifier>{b7a6cc06-126a-4a33-85aa-a975d75f3f2c}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>

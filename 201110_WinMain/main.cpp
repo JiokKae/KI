@@ -17,7 +17,7 @@ HINSTANCE	g_hInstance;		// 프로그램 인스턴스 핸들
 HWND		g_hWnd;				// 윈도우 핸들
 LPSTR		g_lpszClass = (LPSTR)TEXT("윈메인의 시작");
 MainGame	g_mainGame;
-
+int			g_frame;
 void SetWindowSize(int startX, int startY, int sizeX, int sizeY);
 void MakeRectangle(HDC hdc, int x, int y, int size);
 void MakeStar(HDC hdc, int x, int y, int ratio);

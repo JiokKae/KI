@@ -1,11 +1,16 @@
 #include "MissileManager.h"
 #include "Missile.h"
+#include "Image.h"
 
 HRESULT MissileManager::Init()
 {
-	missileMax = 20;
-	vecMissiles.reserve(missileMax);
-	
+	maxMissileCount = 5000;
+	vecMissiles.reserve(maxMissileCount);
+	for (int i = 0; i < maxMissileCount; i++)
+	{
+		vecMissiles.push_back(new Missile());
+		vecMissiles[i]->Init();
+	}
     return S_OK;
 }
 
@@ -34,15 +39,20 @@ void MissileManager::Render(HDC hdc)
 	}
 }
 
-void MissileManager::AddMissile(float posX, float posY)
+int MissileManager::GetMissileCount()
 {
-	if (missileMax <= vecMissiles.size())
-		return;
+	int count = currentMissileCount++;
+	if (currentMissileCount > maxMissileCount - 1)
+		currentMissileCount = 0;
+	return count;
+}
 
-	Missile* missile = new Missile();
-	vecMissiles.push_back(missile);
-	missile->Init();
-	missile->SetPos({ posX, posY });
-	missile->SetAngle(3.141592f * 1.5f);
-	missile->SetIsFire(true);
+void MissileManager::AddMissile(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size, float speed)
+{
+	int count;
+	do {
+		count = GetMissileCount();
+	} while (vecMissiles[count]->GetIsFire() != false);
+
+	vecMissiles[count]->Fired(allies, pos, angle, pattern, size, speed);
 }

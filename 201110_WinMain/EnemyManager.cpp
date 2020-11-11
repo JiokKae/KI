@@ -40,11 +40,12 @@ void EnemyManager::Release()
 	}
 }
 
-void EnemyManager::Update()
+void EnemyManager::Update(POINTFLOAT targetPos)
 {
 	for (itEnemys = vecEnemys.begin(); itEnemys != vecEnemys.end(); itEnemys++)
 	{
 		(*itEnemys)->Update();
+		(*itEnemys)->Fire(targetPos, (Pattern)(rand() % (int)Pattern::END));
 	}
 }
 

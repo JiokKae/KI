@@ -7,17 +7,23 @@ class MissileManager;
 class Enemy : public GameNode
 {
 private:
-	int size;
-	FPOINT pos;
+	// ¸öÃ¼
+	POINTFLOAT pos;
+	POINTFLOAT direction;
+	float size;
 	float speed;
-	bool isDead;
+	bool isAlive;
+	Allies aliies;
+
+	// ·»´õ
 	Image* img;
-
-	MissileManager* missileMgr;
-
 	int updateCount;
 	int currFrameX = 0;
 	int currFrameY = 0;
+
+	// ¹ß»ç
+	int cooltime;
+	int shootFrame;
 
 public:
 	HRESULT Init(float posX = 0, float posY = 0);
@@ -26,10 +32,9 @@ public:
 	void Render(HDC hdc);
 
 	void AutoMove();
+	void Fire(POINTFLOAT tankPos, Pattern pattern);
 
-	FPOINT GetPos() { return pos; }
+	POINTFLOAT GetPos() { return pos; }
 
-	Enemy();
-	~Enemy();
 };
 

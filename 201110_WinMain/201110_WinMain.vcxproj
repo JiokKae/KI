@@ -20,7 +20,7 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{DF4A49B0-A716-4035-80FF-35B107A62670}</ProjectGuid>
+    <ProjectGuid>{30886057-8491-43F9-838F-0234464C0ADC}</ProjectGuid>
     <RootNamespace>My201012WinMain</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.17763.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
@@ -122,25 +122,27 @@
     <ClCompile Include="EnemyManager.cpp" />
     <ClCompile Include="GameNode.cpp" />
     <ClCompile Include="Image.cpp" />
+    <ClCompile Include="ImageManager.cpp" />
     <ClCompile Include="KeyManager.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainGame.cpp" />
     <ClCompile Include="Missile.cpp" />
     <ClCompile Include="MissileManager.cpp" />
-    <ClCompile Include="Tank.cpp" />
+    <ClCompile Include="Ship.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Enemy.h" />
     <ClInclude Include="EnemyManager.h" />
     <ClInclude Include="GameNode.h" />
     <ClInclude Include="Image.h" />
+    <ClInclude Include="ImageManager.h" />
     <ClInclude Include="KeyManager.h" />
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Missile.h" />
     <ClInclude Include="MissileManager.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Singleton.h" />
-    <ClInclude Include="Tank.h" />
+    <ClInclude Include="Ship.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

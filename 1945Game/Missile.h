@@ -18,7 +18,7 @@ private:
 	Pattern pattern;
 	static HPEN hPenOutline[2];
 	static HBRUSH hBrushInside[2];
-
+	
 	int cooltime;
 	int shootFrame;
 

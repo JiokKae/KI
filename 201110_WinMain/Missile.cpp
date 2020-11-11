@@ -11,102 +11,155 @@ HRESULT Missile::Init()
 	speed = 5.0f;
 	isFire = false;
 	angle = 0.0f;
-	destAngle = 0.0f;
-	followRatio = 0.1f;
-	time = 0;
 	
-	img = new Image();
-	if (FAILED(img->Init("Image/구슬.bmp", 30, 30,
-		true, RGB(255, 0, 255))))
-	{
-		// 예외처리
-		MessageBox(g_hWnd, "파일로부터 비트맵 생성에 실패했습니다.",
-			"실패", MB_OK);
-	}
+	
+
 	return S_OK;
 }
 
 void Missile::Release()
 {
-	img->Release();
-	delete img;
+
 }
 
 void Missile::Update()
 {
-	if (isFire)
-	{
+	if (!isFire)
+		return;
 		
-#pragma region 유도
-		//float tempAngle;
-		//if (target)
-		//{
-		//	followRatio += 0.2f;
-		//	if (followRatio > 10.0f)
-		//	{
-		//		followRatio = 10.0f;
-		//	}
+	//speed = (sin(pos.y/60) + 1.2f) * 1.5f + (sin(pos.x / 60) + 1.2f) * 1.5f;
+	//angle -= speed/ 100.0f;
 
-		//	destAngle = atan2f(-(target->GetPos().y - pos.y),
-		//		(target->GetPos().x - pos.x));
+	
+	// 적탄환 밖으로 나갈 경우
+	if (pos.x < 0 || pos.x > WINSIZE_X || pos.y < 0 || pos.y > WINSIZE_Y)
+		isFire = false;
 
-		//	tempAngle = DegreeToRadian(angle);
-		//	tempAngle +=
-		//		(destAngle - DegreeToRadian(angle)) / (10.0f / followRatio);
+	pos.x += direction.x * speed;
+	pos.y += direction.y * speed;
 
-		//	angle = RadianToDegree(tempAngle);
-		//}
-
-		//pos.x += cosf(tempAngle) * speed;
-		//pos.y -= sinf(tempAngle) * speed;
-#pragma endregion
-
-		//speed = (sin(pos.y/60) + 1.2f) * 1.5f + (sin(pos.x / 60) + 1.2f) * 1.5f;
-		//angle -= speed/ 100.0f;
-
-		pos.x += cosf(angle) * speed;
-		pos.y -= sinf(angle) * speed;
-		
-		// 벽에 부딪혔는지
-		// 왼쪽, 오른쪽
-		if (pos.x - (size / 2) <= 0)
-		{
-			pos.x = size / 2;
-			angle = PI - angle;
-		}
-		if(pos.x + (size / 2) >= WINSIZE_X)
-		{
-			pos.x = WINSIZE_X - (size / 2);
-			angle = PI - angle;
-		}
-		// 위, 아래
-		if (pos.y - (size / 2) <= 0)
-		{
-			pos.y = (size / 2);
-			angle = PI * 2.0f - angle;
-		}
-		if(pos.y + (size / 2) >= WINSIZE_Y)
-		{
-			pos.y = WINSIZE_Y - (size / 2);
-			angle = PI * 2.0f - angle;
-		}
-	}
+	AdditionalMissile();
 }
 
 void Missile::Render(HDC hdc)
 {
 	if (isFire)
 	{
-		img->Render(hdc, pos.x - (size / 2), pos.y - (size / 2));
+		img->Render(hdc, pos.x - (size / 2), pos.y - (size / 2), size, size);
 		//Ellipse(hdc, pos.x - (size / 2), pos.y - (size / 2),pos.x + (size / 2), pos.y + (size / 2));
 	}
 }
 
-Missile::Missile()
+void Missile::Fired(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size, float speed)
 {
+	if (size < 10)
+		return;
+	this->isFire = true;
+	this->allies = allies;
+	string strKey;
+	if (allies == Allies::PLAYER) strKey = "Missile1";
+	if (allies == Allies::ENEMY) strKey = "Missile2";
+	img = ImageManager::GetSingleton()->FineImage(strKey);
+	this->pos = pos;
+	this->size = size;
+	this->speed = speed;
+
+	this->shootFrame = g_frame;
+	SetAngle(angle);
+	SetPattern(pattern);
 }
 
-
-Missile::~Missile()
+void Missile::SetPattern(Pattern pattern)
 {
+	this->pattern = pattern;
+	switch (pattern)
+	{
+	case Pattern::FIREWORK:
+		cooltime = 40;
+		break;
+	case Pattern::ARROW:
+		speed *= 2;
+		cooltime = 5;
+		break;
+	case Pattern::SHOTGUN:
+		speed *= 0.8f;
+		cooltime = 20;
+		break;
+	case Pattern::NEWS:
+		shootFrame = g_frame - 20000;
+		cooltime = 10000;
+		break;
+	case Pattern::HURRICANE:
+		speed *= 1.5f;
+		cooltime = 3;
+		break;
+	case Pattern::STOP:
+		speed = 0;
+		cooltime = 100;
+		break;
+	case Pattern::STOPSHOTGUN:
+		speed *= 0.8f;
+		cooltime = 20;
+		break;
+	}
+}
+
+void Missile::AdditionalMissile()
+{
+	if (shootFrame + cooltime > g_frame)
+		return;
+
+	switch (pattern)
+	{
+		//	1 to 8 end
+	case Pattern::FIREWORK:
+		for (int i = 0; i < 8; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 45 + angle, Pattern::SHOTGUN, size * 0.66f, speed / 4);
+		this->isFire = false;
+		break;
+
+		// 1 to 3
+	case Pattern::ARROW:
+		for (int i = -1; i < 2; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, angle - 180 + i * 10, Pattern::NONE, size * 0.8f, speed / 2);
+		break;
+
+		// 1 to 3 end
+	case Pattern::SHOTGUN:
+		for (int i = -1; i < 2; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, angle + i * 10, Pattern::NONE, size * 0.66f, speed * 1.5f);
+		this->isFire = false;
+		break;
+
+		// 1 to 4 end
+	case Pattern::NEWS:
+		for (int i = 0; i < 4; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, angle + i * 90, Pattern::ARROW, size, speed * 0.8f);
+		this->isFire = false;
+		break;
+
+		// 1 to 1
+	case Pattern::HURRICANE:
+		angle += 45;
+		MissileManager::GetSingleton()->AddMissile(allies, pos, angle, Pattern::SHOTGUN, size * 0.8f, speed * 0.2f);
+		break;
+
+	case Pattern::STOP:
+		for (int i = 0; i < 8; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 45 + angle, Pattern::RANDOM, size * 0.66f, 10.0f / 4);
+		this->isFire = false;
+		break;
+
+		// 1 to 3 end
+	case Pattern::STOPSHOTGUN:
+		for (int i = -1; i < 2; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, angle + i * 10, Pattern::STOP, size * 1.f, speed * 1.5f);
+		this->isFire = false;
+		break;
+	case Pattern::RANDOM:
+		MissileManager::GetSingleton()->AddMissile(allies, pos, angle, (Pattern)(rand() % (int)Pattern::END), size * 0.8f, speed * 1.5f);
+		this->isFire = false;
+		break;
+	}
+	shootFrame = g_frame;
 }

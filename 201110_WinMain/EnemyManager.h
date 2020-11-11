@@ -12,7 +12,7 @@ class EnemyManager : public GameNode
 public:
 	HRESULT Init();
 	void Release();
-	void Update();
+	void Update(POINTFLOAT targetPos);
 	void Render(HDC hdc);
 
 	void AddEnemy(float posX, float posY);
