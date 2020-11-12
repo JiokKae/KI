@@ -6,6 +6,7 @@
 #include "KeyManager.h"
 #include "ImageManager.h"
 #include "MissileManager.h"
+#include "TimerManager.h"
 
 #define WINSIZE_X	600
 #define WINSIZE_Y	800

@@ -61,7 +61,8 @@ void RainbowCircle(HDC hdc, RECT pos, int _size, int num, int T, int sizeT, int 
 			RGB(
 				cos(g_Frame * dir / 15.0 + (i + T) * radian) * 127 + 128,
 				sin(g_Frame * dir / 15.0 + (i + T) * radian) * 127 + 128,
-				sin(g_Frame * dir / 15.0 + ((i + T) + 50) * radian) * 127 + 128)
+				sin(g_Frame * dir / 15.0 + ((i + T) + 50) * radian) * 127 + 128
+			)
 		);
 		HBRUSH oldBrush = (HBRUSH)SelectObject(hdc, brush);
 

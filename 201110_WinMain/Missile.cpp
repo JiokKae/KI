@@ -144,9 +144,10 @@ void Missile::AdditionalMissile()
 		MissileManager::GetSingleton()->AddMissile(allies, pos, angle, Pattern::SHOTGUN, size * 0.8f, speed * 0.2f);
 		break;
 
+		// 1 to 4 end
 	case Pattern::STOP:
-		for (int i = 0; i < 8; i++)
-			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 45 + angle, Pattern::RANDOM, size * 0.66f, 10.0f / 4);
+		for (int i = -1; i < 2; i++)
+			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 10 + angle, Pattern::RANDOM, size * 0.66f, 10.0f / 4);
 		this->isFire = false;
 		break;
 
@@ -156,6 +157,8 @@ void Missile::AdditionalMissile()
 			MissileManager::GetSingleton()->AddMissile(allies, pos, angle + i * 10, Pattern::STOP, size * 1.f, speed * 1.5f);
 		this->isFire = false;
 		break;
+
+		// 1 to 1 end
 	case Pattern::RANDOM:
 		MissileManager::GetSingleton()->AddMissile(allies, pos, angle, (Pattern)(rand() % (int)Pattern::END), size * 0.8f, speed * 1.5f);
 		this->isFire = false;

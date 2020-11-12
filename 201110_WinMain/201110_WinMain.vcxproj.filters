@@ -4,9 +4,6 @@
     <ClCompile Include="GameNode.cpp">
       <Filter>2DFrameWork</Filter>
     </ClCompile>
-    <ClCompile Include="KeyManager.cpp">
-      <Filter>2DFrameWork</Filter>
-    </ClCompile>
     <ClCompile Include="Enemy.cpp">
       <Filter>MainGame\Enemy</Filter>
     </ClCompile>
@@ -25,24 +22,27 @@
     <ClCompile Include="Image.cpp">
       <Filter>2DFrameWork</Filter>
     </ClCompile>
-    <ClCompile Include="Ship.cpp">
-      <Filter>MainGame</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
     <ClCompile Include="ImageManager.cpp">
-      <Filter>2DFrameWork</Filter>
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="KeyManager.cpp">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Timer.cpp">
+      <Filter>2DFrameWork\Timer</Filter>
+    </ClCompile>
+    <ClCompile Include="TimerManager.cpp">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="Ship.cpp">
+      <Filter>MainGame\Ship</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameNode.h">
-      <Filter>2DFrameWork</Filter>
-    </ClInclude>
-    <ClInclude Include="KeyManager.h">
-      <Filter>2DFrameWork</Filter>
-    </ClInclude>
-    <ClInclude Include="Singleton.h">
       <Filter>2DFrameWork</Filter>
     </ClInclude>
     <ClInclude Include="Enemy.h">
@@ -66,11 +66,23 @@
     <ClInclude Include="pch.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="Ship.h">
-      <Filter>MainGame</Filter>
-    </ClInclude>
     <ClInclude Include="ImageManager.h">
-      <Filter>2DFrameWork</Filter>
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="KeyManager.h">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Singleton.h">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Timer.h">
+      <Filter>2DFrameWork\Timer</Filter>
+    </ClInclude>
+    <ClInclude Include="TimerManager.h">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="Ship.h">
+      <Filter>MainGame\Ship</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -91,6 +103,15 @@
     </Filter>
     <Filter Include="소스 파일">
       <UniqueIdentifier>{b7a6cc06-126a-4a33-85aa-a975d75f3f2c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2DFrameWork\Timer">
+      <UniqueIdentifier>{ddedce74-90d4-41c0-aa5b-cdc35c39c636}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="2DFrameWork\Manager">
+      <UniqueIdentifier>{7710e664-a471-4f4c-bcef-7b47bf8015df}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="MainGame\Ship">
+      <UniqueIdentifier>{ef958e12-5966-442c-81ae-e9c9fe48bccf}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
 </Project>

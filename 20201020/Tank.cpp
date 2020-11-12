@@ -23,22 +23,34 @@ void Tank::Release()
 
 void Tank::Update()
 {
-	
+	if (GetAsyncKeyState(VK_LEFT))
+	{
+		RotateBarrel(-1);
+	}
+	if (GetAsyncKeyState(VK_RIGHT))
+	{
+		RotateBarrel(1);
+	}
 }
 
 void Tank::Render(HDC hdc)
 {
+	HPEN hPen = CreatePen(PS_SOLID, 5, RGB(130, 130, 130));
+	HPEN hOldPen = (HPEN)SelectObject(hdc, hPen);
+
 	// ¸öÃ¼
 	Ellipse(hdc, (int)(pos.x - (size / 2)), (int)(pos.y - (size / 2)), (int)(pos.x + (size / 2)), (int)(pos.y + (size / 2)));
 	
 	// Æ÷½Å
 	MoveToEx(hdc, (int)pos.x, (int)pos.y, NULL);
-
 	LineTo(hdc, (int)GetBarrelEnd().x, (int)GetBarrelEnd().y);
 	
+	DeleteObject(SelectObject(hdc, hOldPen));
+	/*
 	char szText[128];
 	wsprintf(szText, "Angle : %d", angle);
 	TextOut(hdc, 5, 60, szText, strlen(szText));
+	*/
 }
 
 void Tank::Fire(Missile * missile, int &index, int numOfMissile)

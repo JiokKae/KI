@@ -10,6 +10,7 @@ HRESULT MainGame::Init()
 	KeyManager::GetSingleton()->Init();
 	MissileManager::GetSingleton()->Init();
 	ImageManager::GetSingleton()->Init();
+	TimerManager::GetSingleton()->Init();
 
 	hTimer = (HANDLE)SetTimer(g_hWnd, 0, 10, NULL);
 
@@ -17,6 +18,8 @@ HRESULT MainGame::Init()
 	ImageManager::GetSingleton()->AddImage("UFO", "Image/ufo.bmp", 530*2, 64*2, 10, 2, true, RGB(255, 0, 255));
 	ImageManager::GetSingleton()->AddImage("Missile1", "Image/구슬.bmp", 30, 30, true, RGB(255, 0, 255));
 	ImageManager::GetSingleton()->AddImage("Missile2", "Image/bullet.bmp", 30, 30, true, RGB(255, 0, 255));
+	ImageManager::GetSingleton()->AddImage("BackGround", "Image/backGround.bmp", WINSIZE_X, WINSIZE_Y);
+	ImageManager::GetSingleton()->AddImage("Rocket", "Image/rocket.bmp", 52, 64, true, RGB(255, 0, 255));
 
 	player = new Ship;
 	player->Init();
@@ -28,12 +31,7 @@ HRESULT MainGame::Init()
 	backBuffer = new Image();
 	backBuffer->Init(WINSIZE_X, WINSIZE_Y);
 
-	backGround = new Image();
-	if (FAILED(backGround->Init("Image/backGround.bmp", WINSIZE_X, WINSIZE_Y)))
-	{
-		// 예외처리
-		MessageBox(g_hWnd, "빈 비트맵 생성에 실패했습니다.", "실패", MB_OK);
-	}
+	backGround = ImageManager::GetSingleton()->FineImage("BackGround");
 
 	isInit = true;
 	return S_OK;
@@ -44,9 +42,6 @@ void MainGame::Release()
 	player->Release();
 	delete player;
 
-	backGround->Release();
-	delete backGround;
-
 	backBuffer->Release();
 	delete backBuffer;
 	
@@ -55,12 +50,14 @@ void MainGame::Release()
 	KeyManager::GetSingleton()->Release();
 	MissileManager::GetSingleton()->Release();
 	ImageManager::GetSingleton()->Release();
+	TimerManager::GetSingleton()->Release();
 }
 
 void MainGame::Update()
 {
 	enemyMgr->Update(player->GetPos());
 	MissileManager::GetSingleton()->Update();
+	TimerManager::GetSingleton()->Update();
 	player->Update();
 
 	InvalidateRect(g_hWnd, NULL, false);
@@ -83,6 +80,8 @@ void MainGame::Render(HDC hdc)
 	wsprintf(szText, "Clicked X : %d, Y : %d",
 		mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(backDC, 10, 30, szText, strlen(szText));
+
+	TimerManager::GetSingleton()->Render(backDC);
 
 	// 백버퍼 복사(출력)
 	backBuffer->Render(hdc, 0, 0, WINSIZE_X, WINSIZE_Y);

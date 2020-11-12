@@ -42,7 +42,6 @@ struct Object
 // 전역변수
 HINSTANCE	g_hInstance;
 HWND		g_hWnd;
-LPSTR
 
 void MakeRectangle(HDC hdc, int x, int y, int size);
 void MakeStar(HDC hdc, int x, int y);

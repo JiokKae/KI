@@ -4,7 +4,6 @@
 #include "main.h"
 #include "framework.h"
 #include "MainGame.h"
-#include "MacroFunction.h"
 
 // 전역 변수:
 HINSTANCE g_hInstance;                                // 현재 인스턴스입니다.

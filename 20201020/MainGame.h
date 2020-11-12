@@ -32,6 +32,8 @@ private:
 	int numOfMissile;
 	int currentMissileIndex;
 
+	bool isInit;
+
 public:
 	HRESULT Init(HINSTANCE hInst);	// 멤버 변수 초기화, 메모리 할당
 	void Release();					// 메모리 해제

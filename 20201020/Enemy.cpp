@@ -34,11 +34,11 @@ void Enemy::Update(POINTFLOAT tankPos)
 		velocity.x += nomalVector.x;
 		velocity.y += nomalVector.y;
 
-		pos.x += velocity.x;
-		pos.y += velocity.y;
+		//pos.x += velocity.x;
+		//pos.y += velocity.y;
 
-		//pos.x += nomalVector.x * speed;
-		//pos.y += nomalVector.y * speed;
+		pos.x += nomalVector.x * speed;
+		pos.y += nomalVector.y * speed;
 	}
 }
 

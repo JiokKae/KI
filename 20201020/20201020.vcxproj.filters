@@ -16,21 +16,15 @@
     <Filter Include="헤더 파일\WinAPI">
       <UniqueIdentifier>{c670e97a-8826-4c23-9a36-feccf2f37107}</UniqueIdentifier>
     </Filter>
+    <Filter Include="MainGame">
+      <UniqueIdentifier>{7566a4b3-72dc-46e1-8db3-bcc72f860e4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameNode.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
-    <ClInclude Include="MainGame.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
     <ClInclude Include="pch.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Tank.h">
-      <Filter>헤더 파일</Filter>
-    </ClInclude>
-    <ClInclude Include="Missile.h">
       <Filter>헤더 파일</Filter>
     </ClInclude>
     <ClInclude Include="targetver.h">
@@ -45,31 +39,37 @@
     <ClInclude Include="framework.h">
       <Filter>헤더 파일\WinAPI</Filter>
     </ClInclude>
-    <ClInclude Include="Enemy.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="MainGame.h">
+      <Filter>MainGame</Filter>
     </ClInclude>
-    <ClInclude Include="MacroFunction.h">
-      <Filter>헤더 파일</Filter>
+    <ClInclude Include="Missile.h">
+      <Filter>MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="Tank.h">
+      <Filter>MainGame</Filter>
+    </ClInclude>
+    <ClInclude Include="Enemy.h">
+      <Filter>MainGame</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GameNode.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
-    <ClCompile Include="MainGame.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Tank.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
-    <ClCompile Include="Missile.cpp">
-      <Filter>소스 파일</Filter>
-    </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>소스 파일</Filter>
     </ClCompile>
+    <ClCompile Include="MainGame.cpp">
+      <Filter>MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Missile.cpp">
+      <Filter>MainGame</Filter>
+    </ClCompile>
+    <ClCompile Include="Tank.cpp">
+      <Filter>MainGame</Filter>
+    </ClCompile>
     <ClCompile Include="Enemy.cpp">
-      <Filter>소스 파일</Filter>
+      <Filter>MainGame</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

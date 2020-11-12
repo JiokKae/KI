@@ -109,12 +109,13 @@ void MainGame::Render(HDC hdc)
 		if (imagePos[i].y > WINSIZE_Y)
 			imagePos[i].y = 0;
 	}
+	/* 이오리 많이 나옴
 	for (int i = 0; i < 8; i++)
 	{
 		ioriAni->Render(hdcMem, 700 + (90 + 10 * x[i]%9 + 100 * sin(x[i] / 40.0f)) * i, 100,  1 + 1 * i , x[i]++/2 % 9);
 		ioriAni->Render(hdcMem, 700 - (90 + 10 * x[i]%9 + 100 * sin(x[i] / 40.0f)) * i, 100,  1 + 1 * i , x[i]++/2 % 9);
 	}
-	
+	*/
 	backbuffer->Render(hdc, 0, 0);
 }
 
