@@ -12,11 +12,12 @@ private:
 
 	float fpsTimeElapsed;	// 프레임 경과 시간 (1초 확인)
 	ULONG fpsFrameCount;	// 초당 프레임 수
-
+	ULONG fps;
 public:
 	HRESULT Init();
 	void Tick();
 
-	ULONG GetFpsFrameCount() { return fpsFrameCount; }
+	ULONG GetFPS()			{ return fps; }
+	float GetTimeElapsed()	{ return timeElapsed; }
 };
 

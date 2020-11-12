@@ -42,6 +42,7 @@ void Timer::Tick()
 	if (fpsTimeElapsed >= 1.0f)
 	{
 		fpsTimeElapsed = 0.0f;
+		fps = fpsFrameCount;
 		fpsFrameCount = 0;
 	}
 

@@ -35,4 +35,4 @@ enum class Pattern {
 
 extern HWND g_hWnd;
 extern HINSTANCE g_hInstance;
-extern int g_frame;
+extern float g_time;

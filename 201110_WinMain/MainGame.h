@@ -18,11 +18,9 @@ private:
 
 	HDC hdc;
 	PAINTSTRUCT ps;
-	HANDLE hTimer;
 	MOUSE_DATA mouseData;
 	bool isInit;
 
-	
 	Image* backBuffer;
 	Image* backGround;
 	EnemyManager* enemyMgr;
@@ -33,7 +31,7 @@ public:
 	HRESULT Init();				// 멤버 변수 초기화, 메모리 할당
 	void Release();				// 메모리 해제
 	void Update();				// 프레임 단위 게임 로직 실행 (데이터 변경)
-	void Render(HDC hdc);		// 프레임 단위 출력 (이미지, 텍스트 등)
+	void Render();				// 프레임 단위 출력 (이미지, 텍스트 등)
 
 	bool CheckCollision(Missile* m1, Missile* m2);	// 미사일끼리 충돌확인
 	float GetDistance(POINTFLOAT pos1, POINTFLOAT pos2);

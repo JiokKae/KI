@@ -12,7 +12,7 @@ HRESULT MainGame::Init()
 	ImageManager::GetSingleton()->Init();
 	TimerManager::GetSingleton()->Init();
 
-	hTimer = (HANDLE)SetTimer(g_hWnd, 0, 10, NULL);
+	hdc = GetDC(g_hWnd);
 
 	// 이미지를 미리 로드한다
 	ImageManager::GetSingleton()->AddImage("UFO", "Image/ufo.bmp", 530*2, 64*2, 10, 2, true, RGB(255, 0, 255));
@@ -47,23 +47,25 @@ void MainGame::Release()
 	
 	enemyMgr->Release();
 
-	KeyManager::GetSingleton()->Release();
+	
 	MissileManager::GetSingleton()->Release();
 	ImageManager::GetSingleton()->Release();
 	TimerManager::GetSingleton()->Release();
+	KeyManager::GetSingleton()->Release();
+
+	ReleaseDC(g_hWnd, hdc);
 }
 
 void MainGame::Update()
 {
 	enemyMgr->Update(player->GetPos());
 	MissileManager::GetSingleton()->Update();
-	TimerManager::GetSingleton()->Update();
 	player->Update();
-
+	
 	InvalidateRect(g_hWnd, NULL, false);
 }
 
-void MainGame::Render(HDC hdc)
+void MainGame::Render()
 {
 	HDC backDC = backBuffer->GetMemDC();
 	backGround->Render(backDC, 0, 0, WINSIZE_X, WINSIZE_Y);
@@ -80,6 +82,10 @@ void MainGame::Render(HDC hdc)
 	wsprintf(szText, "Clicked X : %d, Y : %d",
 		mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(backDC, 10, 30, szText, strlen(szText));
+
+	wsprintf(szText, "g_time : %d", (int)g_time);
+	TextOut(backDC, WINSIZE_X - 300, 0, szText, strlen(szText));
+
 
 	TimerManager::GetSingleton()->Render(backDC);
 
@@ -124,32 +130,16 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 {
 	switch (iMessage)
 	{
-	case WM_CREATE:
-		break;
-	case WM_TIMER:
-		if (isInit)
-		{
-			this->Update();
-			g_frame++;
-		}
-		break;
-
 	case WM_MOUSEMOVE:
 		mouseData.mousePosX = LOWORD(lParam);
 		mouseData.mousePosY = HIWORD(lParam);
 		break;
+
 	case WM_LBUTTONDOWN:
 		mouseData.clickedPosX = LOWORD(lParam);
 		mouseData.clickedPosY = HIWORD(lParam);
 		break;
-	case WM_PAINT:
-		hdc = BeginPaint(g_hWnd, &ps);
-		if(isInit)
-		{
-			this->Render(hdc);
-		}
-		EndPaint(g_hWnd, &ps);
-		break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;

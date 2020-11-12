@@ -4,7 +4,7 @@
 
 HRESULT MissileManager::Init()
 {
-	maxMissileCount = 5000;
+	maxMissileCount = 3000;
 	vecMissiles.reserve(maxMissileCount);
 	for (int i = 0; i < maxMissileCount; i++)
 	{

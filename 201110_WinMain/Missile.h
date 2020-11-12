@@ -15,8 +15,8 @@ private:
 	Allies allies;
 	Pattern pattern;
 
-	int cooltime;
-	int shootFrame;
+	float cooltime;
+	float shootTime;
 
 	Image* img;
 
@@ -44,7 +44,7 @@ public:
 
 	void SetSpeed(float speed) { this->speed = speed; }
 
-	void Fired(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size = 30.0f, float speed = 10.0f);
+	void Fired(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size, float speed);
 	void AdditionalMissile();
 };
 

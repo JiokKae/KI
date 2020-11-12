@@ -46,6 +46,7 @@ void EnemyManager::Update(POINTFLOAT targetPos)
 	{
 		(*itEnemys)->Update();
 		(*itEnemys)->Fire(targetPos, (Pattern)(rand() % (int)Pattern::END));
+		//(*itEnemys)->Fire(targetPos, Pattern::NONE);
 	}
 }
 

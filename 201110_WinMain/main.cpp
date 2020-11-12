@@ -17,7 +17,8 @@ HINSTANCE	g_hInstance;		// 프로그램 인스턴스 핸들
 HWND		g_hWnd;				// 윈도우 핸들
 LPSTR		g_lpszClass = (LPSTR)TEXT("윈메인의 시작");
 MainGame	g_mainGame;
-int			g_frame;
+float		g_time;
+
 void SetWindowSize(int startX, int startY, int sizeX, int sizeY);
 void MakeRectangle(HDC hdc, int x, int y, int size);
 void MakeStar(HDC hdc, int x, int y, int ratio);
@@ -109,16 +110,27 @@ int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance,
 
 	// 메시지 큐에 있는 메시지 처리
 	MSG message;
-	while (GetMessage(&message, 0, 0, 0))
+	while (true)
 	{
-		TranslateMessage(&message);
-		DispatchMessage(&message);
+		if (PeekMessage(&message, 0, 0, 0, PM_REMOVE))
+		{
+			if (message.message == WM_QUIT) 
+				break;
+			TranslateMessage(&message);
+			DispatchMessage(&message);
+		}
+		else
+		{
+			TimerManager::GetSingleton()->Update(); 
+
+			g_mainGame.Update();
+			g_mainGame.Render();
+
+			g_time += TimerManager::GetSingleton()->GetTimeElapsed();
+		}
 	}
 
 	g_mainGame.Release();
-
-	// 타이머 해제
-	KillTimer(g_hWnd, 0);
 
 	return message.wParam;
 }

@@ -10,8 +10,8 @@ HRESULT Enemy::Init(float posX, float posY)
 	isAlive = true;
 	aliies = Allies::ENEMY;
 
-	cooltime = 60 + rand() % 40;
-
+	cooltime = 3.0f;// + (float)(rand() % 40)/60.f;
+	shootTime = -cooltime;
 	updateCount = 0;
 	currFrameX = 0;
 	currFrameY = 0;
@@ -63,8 +63,8 @@ void Enemy::Fire(POINTFLOAT targetPos, Pattern pattern)
 {
 	if (!isAlive)
 		return;
-
-	if (shootFrame + cooltime < g_frame)
+	
+	if (shootTime + cooltime < g_time)
 	{
 		POINTFLOAT v;
 		v.x = targetPos.x - pos.x;
@@ -72,6 +72,6 @@ void Enemy::Fire(POINTFLOAT targetPos, Pattern pattern)
 		float angle = 360 - DEGREE(atan2f(targetPos.y - pos.y, targetPos.x - pos.x));
 		// ป๓ลย
 		MissileManager::GetSingleton()->AddMissile(Allies::ENEMY, pos, angle, pattern);
-		shootFrame = g_frame;
+		shootTime = g_time;
 	}
 }

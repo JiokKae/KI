@@ -22,8 +22,8 @@ private:
 	int currFrameY = 0;
 
 	// น฿ป็
-	int cooltime;
-	int shootFrame;
+	float cooltime;
+	float shootTime;
 
 public:
 	HRESULT Init(float posX = 0, float posY = 0);

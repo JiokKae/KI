@@ -21,5 +21,5 @@ public:
 
 	int GetMissileCount();
 
-	void AddMissile(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size = 30.0f, float speed = 10.0f);
+	void AddMissile(Allies allies, POINTFLOAT pos, float angle, Pattern pattern, float size = 30.0f, float speed = 100.0f);
 };
