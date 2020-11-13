@@ -22,6 +22,11 @@ public:
 		int		height;		// 이미지 세로 크기
 		BYTE	loadType;	// 로드 타입
 
+		// Blend
+		HDC hBlendDC;
+		HBITMAP hBlendBitmap;
+		HBITMAP hOldBlendBit;
+
 		// Animation에 필요한 정보
 		int maxFrameX;		// 최대 프레임 인덱스
 		int maxFrameY;		
@@ -62,6 +67,8 @@ private:
 	bool isTrans;				// 투명화 여부
 	COLORREF transColor;		// 투명화할 색
 
+	BLENDFUNCTION blendFunc;
+
 public:	
 	//빈 비트맵 이미지를 만든다.
 	HRESULT Init(int width, int height);
@@ -84,7 +91,7 @@ public:
 
 	void Render(HDC hdc, int destX, int destY, int sizeX, int sizeY);
 	void FrameRender(HDC hdc, int destX, int destY, int currFrameX, int currFrameY);
-
+	void AlphaRender(HDC hdc, int destX, int destY, BYTE alpha);
 	HDC GetMemDC() { return imageInfo->hMemDC; }
 	int GetMaxFrameX() { return imageInfo->maxFrameX; }
 

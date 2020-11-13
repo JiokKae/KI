@@ -6,17 +6,16 @@ HRESULT Enemy::Init(float posX, float posY)
 	size = 60;
 	direction = { 0, 0 };
 	pos = { posX,  posY };
-	speed = 3.0f;
+	speed = 120.0f;
 	isAlive = true;
 	aliies = Allies::ENEMY;
 
 	cooltime = 3.0f;// + (float)(rand() % 40)/60.f;
+	cooltime = 1.0f;
 	shootTime = -cooltime;
 	updateCount = 0;
 	currFrameX = 0;
 	currFrameY = 0;
-	
-	
 
 	img = ImageManager::GetSingleton()->FineImage("UFO");
 
@@ -30,8 +29,8 @@ void Enemy::Release()
 void Enemy::Update()
 {
 	if (isAlive) {
-		currFrameX = updateCount / 5 % img->GetMaxFrameX();
-		currFrameY = updateCount / 2 % 2;
+		currFrameX = int(g_time * 30.f) % img->GetMaxFrameX();
+		currFrameY = int(g_time * 30.f) % 2;
 		updateCount++;
 
 		AutoMove();
@@ -50,11 +49,17 @@ void Enemy::Render(HDC hdc)
 
 void Enemy::AutoMove()
 {
-	pos.x += speed;
+	pos.x += speed * TimerManager::GetSingleton()->GetTimeElapsed();
 
-	if (pos.x + (size / 2) >= WINSIZE_X ||
-		pos.x - (size / 2) <= 0)
+	if (pos.x - (size / 2) <= 0)
 	{
+		pos.x = size / 2;
+		speed *= -1;
+	}
+
+	if (pos.x + (size / 2) >= WINSIZE_X)
+	{
+		pos.x = WINSIZE_X - size / 2;
 		speed *= -1;
 	}
 }

@@ -76,6 +76,7 @@ void Missile::SetPattern(Pattern pattern)
 	switch (pattern)
 	{
 	case Pattern::FIREWORK:
+		speed *= 3.0f;
 		cooltime = 0.625f;
 		break;
 	case Pattern::ARROW:
@@ -118,7 +119,7 @@ void Missile::AdditionalMissile()
 		//	1 to 8 end
 	case Pattern::FIREWORK:
 		for (int i = 0; i < 8; i++)
-			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 45 + angle, Pattern::SHOTGUN, size * 0.66f, speed / 4);
+			MissileManager::GetSingleton()->AddMissile(allies, pos, i * 45 + angle, Pattern::NONE, size * 0.66f, speed / 4);
 		this->isFire = false;
 		break;
 

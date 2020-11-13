@@ -72,8 +72,10 @@ void MainGame::Render()
 
 	enemyMgr->Render(backDC);
 
-	player->Render(backDC);
 	MissileManager::GetSingleton()->Render(backDC);
+
+	player->Render(backDC);
+
 	char szText[128] = "";
 
 	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);

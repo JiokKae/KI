@@ -16,6 +16,10 @@ HRESULT Image::Init(int width, int height)
 	imageInfo->height = height;
 	imageInfo->loadType = IMAGE_LOAD_KIND::EMPTY;
 
+	imageInfo->hBlendDC = CreateCompatibleDC(hdc);
+	imageInfo->hBlendBitmap = CreateCompatibleBitmap(hdc, width, height);
+	imageInfo->hOldBlendBit = (HBITMAP)SelectObject(imageInfo->hBlendDC, imageInfo->hBlendBitmap);
+
 	ReleaseDC(g_hWnd, hdc);
 
 	if (imageInfo->hBitmap == NULL)
@@ -23,6 +27,11 @@ HRESULT Image::Init(int width, int height)
 		Release();
 		return E_FAIL;
 	}
+
+	blendFunc.AlphaFormat = 0;	// AC_SRC_ALPHA;
+	blendFunc.BlendFlags = 0;
+	blendFunc.BlendOp = AC_SRC_OVER;
+	blendFunc.SourceConstantAlpha = 0;
 
 	return S_OK;
 }
@@ -41,11 +50,14 @@ HRESULT Image::Init(const char * fileName, int width, int height, bool isTrans, 
 	imageInfo->hMemDC = CreateCompatibleDC(hdc);
 	imageInfo->hBitmap = (HBITMAP)LoadImage(g_hInstance, fileName,
 		IMAGE_BITMAP, width, height, LR_LOADFROMFILE);
-	imageInfo->hOldBit =
-		(HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBitmap);
+	imageInfo->hOldBit = (HBITMAP)SelectObject(imageInfo->hMemDC, imageInfo->hBitmap);
 	imageInfo->width = width;
 	imageInfo->height = height;
 	imageInfo->loadType = IMAGE_LOAD_KIND::FILE;
+
+	imageInfo->hBlendDC = CreateCompatibleDC(hdc);
+	imageInfo->hBlendBitmap = CreateCompatibleBitmap(hdc, width, height);
+	imageInfo->hOldBlendBit = (HBITMAP)SelectObject(imageInfo->hBlendDC, imageInfo->hBlendBitmap);
 
 	ReleaseDC(g_hWnd, hdc);
 
@@ -57,6 +69,11 @@ HRESULT Image::Init(const char * fileName, int width, int height, bool isTrans, 
 		Release();
 		return E_FAIL;
 	}
+
+	blendFunc.AlphaFormat = 0;	// AC_SRC_ALPHA;
+	blendFunc.BlendFlags = 0;
+	blendFunc.BlendOp = AC_SRC_OVER;
+	blendFunc.SourceConstantAlpha = 0;
 
 	return S_OK;
 }
@@ -75,6 +92,10 @@ HRESULT Image::Init(const char * fileName, int width, int height, int maxFrameX,
 	imageInfo->width = width;
 	imageInfo->height = height;
 	imageInfo->loadType = IMAGE_LOAD_KIND::FILE;
+
+	imageInfo->hBlendDC = CreateCompatibleDC(hdc);
+	imageInfo->hBlendBitmap = CreateCompatibleBitmap(hdc, width, height);
+	imageInfo->hOldBlendBit = (HBITMAP)SelectObject(imageInfo->hBlendDC, imageInfo->hBlendBitmap);
 
 	// 애니메이션 관련
 	imageInfo->currFrameX = 0;
@@ -105,6 +126,9 @@ void Image::Release()
 		SelectObject(imageInfo->hMemDC, imageInfo->hOldBit);
 		DeleteObject(imageInfo->hBitmap);
 		DeleteDC(imageInfo->hMemDC);
+
+		DeleteObject(SelectObject(imageInfo->hBlendDC, imageInfo->hOldBlendBit));
+		DeleteDC(imageInfo->hBlendDC);
 
 		delete imageInfo;
 		imageInfo = nullptr;
@@ -181,6 +205,34 @@ void Image::FrameRender(HDC hdc, int destX, int destY, int currFrameX, int currF
 		);
 	}
 
+}
+
+void Image::AlphaRender(HDC hdc, int destX, int destY, BYTE alpha)
+{
+	blendFunc.SourceConstantAlpha = alpha;
+	if (isTrans)
+	{
+		BitBlt(
+			imageInfo->hBlendDC, 0, 0,
+			imageInfo->width, imageInfo->height,
+			hdc, destX, destY,
+			SRCCOPY);
+		GdiTransparentBlt(
+			imageInfo->hBlendDC, 0, 0,
+			imageInfo->width, imageInfo->height, 
+			imageInfo->hMemDC, 0, 0,
+			imageInfo->width, imageInfo->height, RGB(255, 0, 255));
+		AlphaBlend(
+			hdc, destX, destY, 
+			imageInfo->width, imageInfo->height,
+			imageInfo->hBlendDC, 0, 0,
+			imageInfo->width, imageInfo->height, blendFunc);
+	}
+	else
+	{
+		AlphaBlend(hdc, destX, destY, imageInfo->width, imageInfo->height,
+			imageInfo->hMemDC, 0, 0, imageInfo->width, imageInfo->height, blendFunc);
+	}
 }
 
 Image::Image()
