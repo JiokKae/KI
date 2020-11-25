@@ -16,35 +16,55 @@
 #include <iostream>
 using namespace std;
 
+void PrintArray(int* arr, int size);
+
 class SortInterface
 {
 public:
-	virtual void DoSort() = 0;	// 순수 가상 함수
+	virtual void DoSort(int * arr, int size) = 0;	// 순수 가상 함수
 
 };
 
 class QuickSort : public SortInterface
 {
 public:
-	virtual void DoSort() override { cout << "Do QuickSort~!!" << endl; }
+	virtual void DoSort(int * arr, int size) override { cout << "Do QuickSort~!!" << endl; }
 };
 
 class BubbleSort : public SortInterface
 {
 public:
-	virtual void DoSort() override { cout << "Do BubbleSort~!!" << endl; }
+	virtual void DoSort(int * arr, int size) override 
+	{ 
+		cout << "Do BubbleSort~!!" << endl;
+		int temp;
+		for (int i = size - 1; i > 0; i--)
+		{
+			for (int j = 0; j < i; j++)
+			{
+				if (arr[j] > arr[j + 1])
+				{
+					temp = arr[j];
+					arr[j] = arr[j + 1];
+					arr[j + 1] = temp;
+				}
+				PrintArray(arr, 10);
+				
+			}
+		}
+	}
 };
 
 class InsertionSort : public SortInterface
 {
 public:
-	virtual void DoSort() override { cout << "Do InsertionSort~!!" << endl; }
+	virtual void DoSort(int * arr, int size) override { cout << "Do InsertionSort~!!" << endl; }
 };
 
 class MergeSort : public SortInterface
 {
 public:
-	virtual void DoSort() override { cout << "Do MergeSort~!!" << endl; }
+	virtual void DoSort(int * arr, int size) override { cout << "Do MergeSort~!!" << endl; }
 };
 
 class SortManager
@@ -55,7 +75,7 @@ public:
 	SortManager() : sort(nullptr) {}
 	~SortManager() { if (sort) delete sort; }
 
-	void DoSort() { sort->DoSort(); }
+	void DoSort(int * arr, int size) { sort->DoSort(arr, size); }
 	void ChangeSort(SortInterface* changeSort)
 	{
 		if (sort)
@@ -66,18 +86,30 @@ public:
 
 int main()
 {
+	int testArray[10] = { 23,498,57,203,49,8,7,92,83,476 };
+
 	SortManager sortMgr;
 
 	sortMgr.ChangeSort(new QuickSort());
-	sortMgr.DoSort();
+	sortMgr.DoSort(testArray, 10);
 
 	sortMgr.ChangeSort(new BubbleSort());
-	sortMgr.DoSort();
+	sortMgr.DoSort(testArray, 10);
 
 	sortMgr.ChangeSort(new InsertionSort());
-	sortMgr.DoSort();
+	sortMgr.DoSort(testArray, 10);
 
 	sortMgr.ChangeSort(new MergeSort());
-	sortMgr.DoSort();
+	sortMgr.DoSort(testArray, 10);
 
+	PrintArray(testArray, 10);
+}
+
+void PrintArray(int* arr, int size)
+{
+	for (int i = 0; i < size; i++)
+	{
+		printf("%3d, ", arr[i]);
+	}
+	cout << endl;
 }
