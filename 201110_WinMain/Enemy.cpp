@@ -17,7 +17,7 @@ HRESULT Enemy::Init(float posX, float posY)
 	currFrameX = 0;
 	currFrameY = 0;
 
-	img = ImageManager::GetSingleton()->FineImage("UFO");
+	img = ImageManager::GetSingleton()->FindImage("UFO");
 
 	return S_OK;
 }

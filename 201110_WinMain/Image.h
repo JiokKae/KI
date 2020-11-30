@@ -1,6 +1,7 @@
 #pragma once
 #include "pch.h"
 
+class Animation;
 class Image
 {
 public:
@@ -90,10 +91,17 @@ public:
 	void Release();
 
 	void Render(HDC hdc, int destX, int destY, int sizeX, int sizeY);
+	void Render(HDC hdc, int destX, int destY, int srcX, int srcY, int srcWidth, int srcHeight);
 	void FrameRender(HDC hdc, int destX, int destY, int currFrameX, int currFrameY);
 	void AlphaRender(HDC hdc, int destX, int destY, BYTE alpha);
-	HDC GetMemDC() { return imageInfo->hMemDC; }
-	int GetMaxFrameX() { return imageInfo->maxFrameX; }
+	void AnimationRender(HDC hdc, int destX, int destY, Animation* ani);
+
+	HDC GetMemDC()			{ return imageInfo->hMemDC; }
+	int GetMaxFrameX()		{ return imageInfo->maxFrameX; }
+	int GetWidth()			{ return imageInfo->width; }
+	int GetHeight()			{ return imageInfo->height; }
+	int GetFrameWidth()		{ return imageInfo->frameWidth; }
+	int GetFrameHeight()	{ return imageInfo->frameHeight; }
 
 	Image();
 	~Image();

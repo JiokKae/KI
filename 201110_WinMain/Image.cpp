@@ -1,6 +1,5 @@
 #include "Image.h"
-
-
+#include "Animation.h"
 
 HRESULT Image::Init(int width, int height)
 {
@@ -169,6 +168,41 @@ void Image::Render(HDC hdc, int destX, int destY, int sizeX, int sizeY)
 
 }
 
+void Image::Render(HDC hdc, int destX, int destY, int srcX, int srcY, int srcWidth, int srcHeight)
+{
+	imageInfo->x = destX - (imageInfo->width / 2);
+	imageInfo->y = destY - (imageInfo->height / 2);
+
+	if (isTrans)
+	{
+		GdiTransparentBlt(
+			hdc,
+			destX - (srcWidth / 2),
+			destY - (srcHeight / 2),	// 복사 시작 위치
+			srcWidth,					// 원본에서 복사될 가로 크기
+			srcHeight,					// 원본에서 복사될 세로 크기
+
+			imageInfo->hMemDC,
+			srcX, srcY,
+			srcWidth, srcHeight,
+			transColor);
+	}
+	else
+	{
+		BitBlt(
+			hdc,						// 복사 목적지 DC
+			destX - (srcWidth / 2), 
+			destY - (srcHeight / 2) ,	// 복사 시작 위치
+			srcWidth,					// 원본에서 복사될 가로 크기
+			srcHeight,					// 원본에서 복사될 세로 크기
+			imageInfo->hMemDC,			// 원본 DC
+			srcX, srcY,
+			SRCCOPY						// 복사 옵션
+		);
+	}
+
+}
+
 void Image::FrameRender(HDC hdc, int destX, int destY, int currFrameX, int currFrameY)
 {
 	imageInfo->currFrameX = currFrameX;
@@ -233,6 +267,11 @@ void Image::AlphaRender(HDC hdc, int destX, int destY, BYTE alpha)
 		AlphaBlend(hdc, destX, destY, imageInfo->width, imageInfo->height,
 			imageInfo->hMemDC, 0, 0, imageInfo->width, imageInfo->height, blendFunc);
 	}
+}
+
+void Image::AnimationRender(HDC hdc, int destX, int destY, Animation * ani)
+{
+	Render(hdc, destX, destY, ani->GetFramePoint().x, ani->GetFramePoint().y, imageInfo->frameWidth, imageInfo->frameHeight);
 }
 
 Image::Image()

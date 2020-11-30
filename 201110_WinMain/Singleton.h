@@ -9,7 +9,7 @@ protected:
 	static T* instance;
 
 	Singleton() {};
-	~Singleton() {};
+	virtual ~Singleton() {};
 
 public:
 	static T* GetSingleton();

@@ -1,16 +1,17 @@
 #include "MainGame.h"
 #include "Image.h"
-#include "EnemyManager.h"
-#include "MissileManager.h"
 #include "Missile.h"
-#include "Ship.h"
+#include "TitleScene.h"
+#include "BattleScene.h"
+#include "LoadingScene1.h"
 
 HRESULT MainGame::Init()
 {
-	KeyManager::GetSingleton()->Init();
 	MissileManager::GetSingleton()->Init();
 	ImageManager::GetSingleton()->Init();
 	TimerManager::GetSingleton()->Init();
+	KeyManager::GetSingleton()->Init();
+	SceneManager::GetSingleton()->Init();
 
 	hdc = GetDC(g_hWnd);
 
@@ -21,17 +22,19 @@ HRESULT MainGame::Init()
 	ImageManager::GetSingleton()->AddImage("BackGround", "Image/backGround.bmp", WINSIZE_X, WINSIZE_Y);
 	ImageManager::GetSingleton()->AddImage("Rocket", "Image/rocket.bmp", 52, 64, true, RGB(255, 0, 255));
 
-	player = new Ship;
-	player->Init();
+	titleScene = new TitleScene();
+	battleScene = new BattleScene();
+	loadingScene1 = new LoadingScene1();
+	SceneManager::GetSingleton()->AddScene("Title Scene", titleScene);
+	SceneManager::GetSingleton()->AddScene("Battle Scene", battleScene);
+	SceneManager::GetSingleton()->AddLoadingScene("Loading Scene 1", loadingScene1);
 
-	enemyMgr = new EnemyManager();
-	enemyMgr->Init();
-	enemyMgr->AddEnemy(100, 100);
+	SceneManager::GetSingleton()->ChangeScene("Title Scene");
 
 	backBuffer = new Image();
 	backBuffer->Init(WINSIZE_X, WINSIZE_Y);
 
-	backGround = ImageManager::GetSingleton()->FineImage("BackGround");
+	backGround = ImageManager::GetSingleton()->FindImage("BackGround");
 
 	isInit = true;
 	return S_OK;
@@ -39,29 +42,21 @@ HRESULT MainGame::Init()
 
 void MainGame::Release()
 {
-	player->Release();
-	delete player;
+	SAFE_RELEASE(backBuffer);
 
-	backBuffer->Release();
-	delete backBuffer;
-	
-	enemyMgr->Release();
-
-	
+	SceneManager::GetSingleton()->Release();
 	MissileManager::GetSingleton()->Release();
 	ImageManager::GetSingleton()->Release();
 	TimerManager::GetSingleton()->Release();
 	KeyManager::GetSingleton()->Release();
-
+	
 	ReleaseDC(g_hWnd, hdc);
 }
 
 void MainGame::Update()
 {
-	enemyMgr->Update(player->GetPos());
-	MissileManager::GetSingleton()->Update();
-	player->Update();
-	
+	SceneManager::GetSingleton()->Update();
+
 	InvalidateRect(g_hWnd, NULL, false);
 }
 
@@ -70,62 +65,23 @@ void MainGame::Render()
 	HDC backDC = backBuffer->GetMemDC();
 	backGround->Render(backDC, 0, 0, WINSIZE_X, WINSIZE_Y);
 
-	enemyMgr->Render(backDC);
+	SceneManager::GetSingleton()->Render(backDC);
 
-	MissileManager::GetSingleton()->Render(backDC);
-
-	player->Render(backDC);
-
-	char szText[128] = "";
+	char szText[128];
 
 	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);
 	TextOut(backDC, 10, 5, szText, strlen(szText));
 
-	wsprintf(szText, "Clicked X : %d, Y : %d",
-		mouseData.clickedPosX, mouseData.clickedPosY);
+	wsprintf(szText, "Clicked X : %d, Y : %d", mouseData.clickedPosX, mouseData.clickedPosY);
 	TextOut(backDC, 10, 30, szText, strlen(szText));
 
 	wsprintf(szText, "g_time : %d", (int)g_time);
 	TextOut(backDC, WINSIZE_X - 300, 0, szText, strlen(szText));
 
-
 	TimerManager::GetSingleton()->Render(backDC);
 
 	// 백버퍼 복사(출력)
 	backBuffer->Render(hdc, 0, 0, WINSIZE_X, WINSIZE_Y);
-}
-
-bool MainGame::CheckCollision(Missile * m1, Missile * m2)
-{
-	// m1의 반지름 + m2의 반지름 >= m1과 m2사이 거리 (->충돌)
-	float halfSize1 = m1->GetSize() / 2.0f;
-	float halfSize2 = m2->GetSize() / 2.0f;
-	POINTFLOAT pos1 = m1->GetPos();
-	POINTFLOAT pos2 = m2->GetPos();
-
-	if (GetDistance(pos1, pos2) <= halfSize1 + halfSize2)
-	{
-		return true;
-	}
-	return false;
-}
-
-float MainGame::GetDistance(POINTFLOAT pos1, POINTFLOAT pos2)
-{
-	float dist = sqrtf((pos2.x - pos1.x) * (pos2.x - pos1.x)
-		+ (pos2.y - pos1.y) * (pos2.y - pos1.y));
-
-	return dist;
-}
-
-float MainGame::GetAngle(POINTFLOAT pos1, POINTFLOAT pos2)
-{
-	float x = pos2.x - pos1.x;
-	float y = pos2.y - pos1.y;
-
-	float angle = atan2f(-y, x);
-
-	return angle;
 }
 
 LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lParam)

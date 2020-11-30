@@ -10,40 +10,48 @@ void ImageManager::Release()
 {
 }
 
-void ImageManager::AddImage(string strKey, const char* fileName, int width, int height, bool isTrans, COLORREF transColor)
+Image* ImageManager::AddImage(string strKey, const char* fileName, int width, int height, bool isTrans, COLORREF transColor)
 {
-	if (FineImage(strKey))
+	Image* image = nullptr;
+	image = FindImage(strKey);
+	if (image)
 	{
-		return;
+		return image;
 	}
-	Image* image = new Image();
+	image = new Image();
 	if (FAILED(image->Init(fileName, width, height, isTrans, transColor)))
 	{
 		image->Release();
 		delete image;
 
-		return;
+		return nullptr;
 	}
 
 	mapImageDatas.insert(make_pair(strKey, image));
+
+	return image;
 }
 
-void ImageManager::AddImage(string strKey, const char* fileName, int width, int height, int maxFrameX, int maxFrameY, bool isTrans, COLORREF transColor)
+Image* ImageManager::AddImage(string strKey, const char* fileName, int width, int height, int maxFrameX, int maxFrameY, bool isTrans, COLORREF transColor)
 {
-	if (FineImage(strKey))
+	Image* image = nullptr;
+	image = FindImage(strKey);
+	if (image)
 	{
-		return;
+		return image;
 	}
-	Image* image = new Image();
+	image = new Image();
 	if (FAILED(image->Init(fileName, width, height, maxFrameX, maxFrameY, isTrans, transColor)))
 	{
 		image->Release();
 		delete image;
 
-		return;
+		return nullptr;
 	}
 
 	mapImageDatas.insert(make_pair(strKey, image));
+
+	return image;
 }
 
 void ImageManager::DeleteImage(string strKey)
@@ -58,7 +66,7 @@ void ImageManager::DeleteImage(string strKey)
 	}
 }
 
-Image* ImageManager::FineImage(string strKey)
+Image* ImageManager::FindImage(string strKey)
 {
 	map<string, Image*>::iterator it = mapImageDatas.find(strKey);
 	if (it != mapImageDatas.end())

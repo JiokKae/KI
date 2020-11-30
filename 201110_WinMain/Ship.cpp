@@ -8,7 +8,7 @@ HRESULT Ship::Init()
 	size = {52, 64};
 	speed = 200.f;
 	pos = { WINSIZE_X / 2, WINSIZE_Y - 100 };
-	image = ImageManager::GetSingleton()->FineImage("Rocket");
+	image = ImageManager::GetSingleton()->FindImage("Rocket");
 
 	return S_OK;
 }

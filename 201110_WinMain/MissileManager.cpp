@@ -4,6 +4,8 @@
 
 HRESULT MissileManager::Init()
 {
+	vecMissiles.clear();
+
 	maxMissileCount = 3000;
 	vecMissiles.reserve(maxMissileCount);
 	for (int i = 0; i < maxMissileCount; i++)
@@ -11,6 +13,7 @@ HRESULT MissileManager::Init()
 		vecMissiles.push_back(new Missile());
 		vecMissiles[i]->Init();
 	}
+
     return S_OK;
 }
 
@@ -21,6 +24,7 @@ void MissileManager::Release()
 		(*itMissiles)->Release();
 		delete (*itMissiles);
 	}
+	vecMissiles.clear();
 }
 
 void MissileManager::Update()

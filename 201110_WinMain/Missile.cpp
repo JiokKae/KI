@@ -60,7 +60,7 @@ void Missile::Fired(Allies allies, POINTFLOAT pos, float angle, Pattern pattern,
 	string strKey;
 	if (allies == Allies::PLAYER) strKey = "Missile1";
 	if (allies == Allies::ENEMY) strKey = "Missile2";
-	img = ImageManager::GetSingleton()->FineImage(strKey);
+	img = ImageManager::GetSingleton()->FindImage(strKey);
 	this->pos = pos;
 	this->size = size;
 	this->speed = speed;
