@@ -12,6 +12,7 @@ HRESULT MainGame::Init()
 	TimerManager::GetSingleton()->Init();
 	KeyManager::GetSingleton()->Init();
 	SceneManager::GetSingleton()->Init();
+	SoundManager::GetSingleton()->Init();
 
 	hdc = GetDC(g_hWnd);
 
@@ -29,8 +30,11 @@ HRESULT MainGame::Init()
 	SceneManager::GetSingleton()->AddScene("Battle Scene", battleScene);
 	SceneManager::GetSingleton()->AddLoadingScene("Loading Scene 1", loadingScene1);
 
-	SceneManager::GetSingleton()->ChangeScene("Title Scene");
+	SoundManager::GetSingleton()->AddSound("铆快铆快", "Sound/铆快铆快.mp3", true, true);
+	SoundManager::GetSingleton()->AddSound("Dark Waltz", "Sound/Dark Waltz.mp3", true, true);
 
+	SceneManager::GetSingleton()->ChangeScene("Title Scene");
+	
 	backBuffer = new Image();
 	backBuffer->Init(WINSIZE_X, WINSIZE_Y);
 
@@ -44,6 +48,7 @@ void MainGame::Release()
 {
 	SAFE_RELEASE(backBuffer);
 
+	SoundManager::GetSingleton()->Release();
 	SceneManager::GetSingleton()->Release();
 	MissileManager::GetSingleton()->Release();
 	ImageManager::GetSingleton()->Release();
@@ -56,7 +61,7 @@ void MainGame::Release()
 void MainGame::Update()
 {
 	SceneManager::GetSingleton()->Update();
-
+	
 	InvalidateRect(g_hWnd, NULL, false);
 }
 
@@ -69,7 +74,7 @@ void MainGame::Render()
 
 	char szText[128];
 
-	wsprintf(szText, "X : %d, Y : %d", mouseData.mousePosX, mouseData.mousePosY);
+	wsprintf(szText, "X : %d, Y : %d", g_ptMouse.x, g_ptMouse.y);
 	TextOut(backDC, 10, 5, szText, strlen(szText));
 
 	wsprintf(szText, "Clicked X : %d, Y : %d", mouseData.clickedPosX, mouseData.clickedPosY);
@@ -89,8 +94,8 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 	switch (iMessage)
 	{
 	case WM_MOUSEMOVE:
-		mouseData.mousePosX = LOWORD(lParam);
-		mouseData.mousePosY = HIWORD(lParam);
+		g_ptMouse.x = LOWORD(lParam);
+		g_ptMouse.y = HIWORD(lParam);
 		break;
 
 	case WM_LBUTTONDOWN:

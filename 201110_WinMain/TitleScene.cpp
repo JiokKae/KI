@@ -1,34 +1,56 @@
 #include "TitleScene.h"
 #include "Image.h"
+#include "Button.h"
+#include "ButtonFunction.h"
 
 HRESULT TitleScene::Init()
 {
 	img = ImageManager::GetSingleton()->AddImage("Title Scene Image", "Image/bin.bmp", WINSIZE_X, WINSIZE_Y);
+	SoundManager::GetSingleton()->Play("Dark Waltz", 0.6f);
 
-	float a = 0;
-	for (int i = 0; i < 1000000; i++)
-	{
-		a += 100.0f;
-	}
-	//Sleep(500);
+	button1 = new Button();
+	ImageManager::GetSingleton()->AddImage("Button1", "Image/button.bmp", 122, 62, 1, 2, true, RGB(255,0,255));
+	button1->Init("Button1", WINSIZE_X / 2, WINSIZE_Y - 300, { 0, 1 }, { 0, 0 });
+	
+	quitButton = new Button();
+	quitButton->Init("Button1", WINSIZE_X / 2, WINSIZE_Y - 100, { 0, 1 }, { 0, 0 });
+
+	int* a = new int(100);
+
+	Argument* arg = new Argument;
+	arg->a = string("Battle Scene");
+	arg->b = string("Loading Scene 1");
+
+	button1->SetButtonFunc(ButtonFunction::ChangeScene, (void*)arg);
+	quitButton->SetButtonFunc(ButtonFunction::QuitProgram, nullptr);
+
+	Sleep(300);
+
 	return S_OK;
 }
 
 void TitleScene::Release()
 {
+	SoundManager::GetSingleton()->Stop("Dark Waltz");
+
+	SAFE_RELEASE(button1);
+	SAFE_RELEASE(quitButton);
 }
 
 void TitleScene::Update()
 {
-	if (KeyManager::GetSingleton()->IsOnceKeyDown(VK_RETURN))
-	{
-		SceneManager::GetSingleton()->ChangeScene("Battle Scene", "Loading Scene 1");
-		return;
-	}
+	if (button1)
+		button1->Update();
+	if (quitButton)
+		quitButton->Update();
 }
 
 void TitleScene::Render(HDC hdc)
 {
 	if (img)
 		img->Render(hdc, 0, 0, WINSIZE_X, WINSIZE_Y);
+	if (button1)
+		button1->Render(hdc);
+	if (quitButton)
+		quitButton->Render(hdc);
 }

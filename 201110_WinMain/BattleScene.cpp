@@ -17,7 +17,9 @@ HRESULT BattleScene::Init()
 	camel1->Init(200, 200);
 
 	MissileManager::GetSingleton()->Init();
-	//Sleep(1000);
+	Sleep(800);
+	SoundManager::GetSingleton()->Play("铆快铆快", 0.3f);
+
 	return S_OK;
 }
 
@@ -26,7 +28,7 @@ void BattleScene::Release()
 	SAFE_RELEASE(player);
 	SAFE_RELEASE(enemyMgr);
 	SAFE_RELEASE(camel1);
-
+	SoundManager::GetSingleton()->Stop("铆快铆快");
 	MissileManager::GetSingleton()->Release();
 }
 
@@ -35,9 +37,13 @@ void BattleScene::Update()
 	if (KeyManager::GetSingleton()->IsOnceKeyDown(VK_ESCAPE))
 	{
 		SceneManager::GetSingleton()->ChangeScene("Title Scene", "Loading Scene 1");
+		SoundManager::GetSingleton()->Pause("铆快铆快");
 		return;
 	}
-
+	if (KeyManager::GetSingleton()->IsOnceKeyDown(VK_DELETE))
+	{
+		SoundManager::GetSingleton()->Resume("铆快铆快");
+	}
 	enemyMgr->Update(player->GetPos());
 	camel1->Update();
 	player->Update();

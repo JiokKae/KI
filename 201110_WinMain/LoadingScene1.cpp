@@ -14,7 +14,6 @@ void LoadingScene1::Release()
 
 void LoadingScene1::Update()
 {
-	Sleep(1000);
 }
 
 void LoadingScene1::Render(HDC hdc)

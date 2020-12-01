@@ -103,7 +103,7 @@ HRESULT SceneManager::ChangeScene(string sceneName, string loadingSceneName)
 	return E_FAIL;
 }
 
-DWORD LoadingThread(LPVOID pvParam)
+DWORD CALLBACK LoadingThread(LPVOID pvParam)
 {
 	SceneManager::readyScene->Init();
 	SceneManager::currScene = SceneManager::readyScene;

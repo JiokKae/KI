@@ -11,6 +11,7 @@ using namespace std;
 #include "MissileManager.h"
 #include "SceneManager.h"
 #include "TimerManager.h"
+#include "SoundManager.h"
 
 #define WINSIZE_X	600
 #define WINSIZE_Y	800
@@ -18,6 +19,7 @@ using namespace std;
 #define RADIAN(x)	(x * PI / 180.0f)
 #define DEGREE(x)	(x * 180.0f / PI)
 #define SAFE_DELETE(p) 		{if (p) delete p, p = nullptr; }
+#define SAFE_ARR_DELETE(p) 	{if (p) delete[] p, p = nullptr; }
 #define SAFE_RELEASE(p) 	{if (p) p->Release(), delete p, p = nullptr; }
 
 enum class Allies {
@@ -39,6 +41,12 @@ enum class Pattern {
 	END
 };
 
+struct Argument {
+	string a;
+	string b;
+};
+
 extern HWND g_hWnd;
 extern HINSTANCE g_hInstance;
 extern float g_time;
+extern POINT g_ptMouse;
