@@ -12,7 +12,7 @@
 #include <Windows.h>
 #include "MainGame.h"
 
-// 전역변수
+// 전역변수	
 HINSTANCE	g_hInstance;		// 프로그램 인스턴스 핸들
 HWND		g_hWnd;				// 윈도우 핸들
 LPSTR		g_lpszClass = (LPSTR)TEXT("윈메인의 시작");
@@ -20,7 +20,6 @@ MainGame	g_mainGame;
 float		g_time;
 POINT		g_ptMouse;
 
-void SetWindowSize(int startX, int startY, int sizeX, int sizeY);
 void MakeRectangle(HDC hdc, int x, int y, int size);
 void MakeStar(HDC hdc, int x, int y, int ratio);
 
@@ -142,20 +141,4 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
 {
 	return g_mainGame.MainProc(hWnd, iMessage,
 		wParam, lParam);
-}
-
-void SetWindowSize(int startX, int startY, int sizeX, int sizeY)
-{
-	// 윈도우 작업영역 지정
-	RECT rc;
-	rc.left = 0;
-	rc.top = 0;
-	rc.right = sizeX;
-	rc.bottom = sizeY;
-
-	// 실제 윈도우 크기 받아오기
-	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
-
-	// 이동
-	MoveWindow(g_hWnd, startX, startY, rc.right - rc.left, rc.bottom - rc.top, true);
 }

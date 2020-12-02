@@ -12,6 +12,7 @@ HRESULT TimerManager::Init()
 void TimerManager::Release()
 {
 	delete timer;
+	ReleaseSingleton();
 }
 
 void TimerManager::Update()

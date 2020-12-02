@@ -5,8 +5,8 @@
 
 HRESULT TitleScene::Init()
 {
-	img = ImageManager::GetSingleton()->AddImage("Title Scene Image", "Image/bin.bmp", WINSIZE_X, WINSIZE_Y);
-	SoundManager::GetSingleton()->Play("Dark Waltz", 0.6f);
+	img = ImageManager::GetSingleton()->AddImage("TitleSceneImage", "Image/bin.bmp", WINSIZE_X, WINSIZE_Y);
+	SoundManager::GetSingleton()->Play("DarkWaltz", 0.6f);
 
 	button1 = new Button();
 	ImageManager::GetSingleton()->AddImage("Button1", "Image/button.bmp", 122, 62, 1, 2, true, RGB(255,0,255));
@@ -18,8 +18,8 @@ HRESULT TitleScene::Init()
 	int* a = new int(100);
 
 	Argument* arg = new Argument;
-	arg->a = string("Battle Scene");
-	arg->b = string("Loading Scene 1");
+	arg->a = string("BattleScene");
+	arg->b = string("LoadingScene1");
 
 	button1->SetButtonFunc(ButtonFunction::ChangeScene, (void*)arg);
 	quitButton->SetButtonFunc(ButtonFunction::QuitProgram, nullptr);
@@ -31,7 +31,7 @@ HRESULT TitleScene::Init()
 
 void TitleScene::Release()
 {
-	SoundManager::GetSingleton()->Stop("Dark Waltz");
+	SoundManager::GetSingleton()->Stop("DarkWaltz");
 
 	SAFE_RELEASE(button1);
 	SAFE_RELEASE(quitButton);

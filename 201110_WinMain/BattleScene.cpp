@@ -36,7 +36,7 @@ void BattleScene::Update()
 {
 	if (KeyManager::GetSingleton()->IsOnceKeyDown(VK_ESCAPE))
 	{
-		SceneManager::GetSingleton()->ChangeScene("Title Scene", "Loading Scene 1");
+		SceneManager::GetSingleton()->ChangeScene("TitleScene", "LoadingScene1");
 		SoundManager::GetSingleton()->Pause("Ã­¿ìÃ­¿ì");
 		return;
 	}

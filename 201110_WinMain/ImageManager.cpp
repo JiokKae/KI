@@ -8,6 +8,7 @@ HRESULT ImageManager::Init()
 
 void ImageManager::Release()
 {
+	ReleaseSingleton();
 }
 
 Image* ImageManager::AddImage(string strKey, const char* fileName, int width, int height, bool isTrans, COLORREF transColor)

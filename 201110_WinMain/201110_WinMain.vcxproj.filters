@@ -67,6 +67,9 @@
     <ClCompile Include="ButtonFunction.cpp">
       <Filter>2DFrameWork\Button</Filter>
     </ClCompile>
+    <ClCompile Include="TileMapToolScene.cpp">
+      <Filter>MainGame\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameNode.h">
@@ -137,6 +140,9 @@
     </ClInclude>
     <ClInclude Include="ButtonFunction.h">
       <Filter>2DFrameWork\Button</Filter>
+    </ClInclude>
+    <ClInclude Include="TileMapToolScene.h">
+      <Filter>MainGame\Scene</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

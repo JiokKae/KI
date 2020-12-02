@@ -20,11 +20,6 @@ private:
 	Image* backBuffer;
 	Image* backGround;
 
-	// Scene 추가
-	GameNode* titleScene;
-	GameNode* battleScene;
-	GameNode* loadingScene1;
-
 public:
 	HRESULT Init();				// 멤버 변수 초기화, 메모리 할당
 	void Release();				// 메모리 해제

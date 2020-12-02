@@ -15,6 +15,8 @@ using namespace std;
 
 #define WINSIZE_X	600
 #define WINSIZE_Y	800
+#define WINSIZE_TILE_MAP_X	1600
+#define WINSIZE_TILE_MAP_Y	900
 #define PI			3.141592f
 #define RADIAN(x)	(x * PI / 180.0f)
 #define DEGREE(x)	(x * 180.0f / PI)
@@ -46,7 +48,36 @@ struct Argument {
 	string b;
 };
 
+struct Argument2 {
+	void* arg[2];
+};
+
+
 extern HWND g_hWnd;
 extern HINSTANCE g_hInstance;
 extern float g_time;
 extern POINT g_ptMouse;
+
+inline void SetWindowSize(int startX, int startY, int sizeX, int sizeY)
+{
+	// 윈도우 작업영역 지정
+	RECT rc;
+	rc.left = 0;
+	rc.top = 0;
+	rc.right = sizeX;
+	rc.bottom = sizeY;
+
+	// 실제 윈도우 크기 받아오기
+	AdjustWindowRect(&rc, WS_OVERLAPPEDWINDOW, false);
+
+	// 이동
+	MoveWindow(g_hWnd, startX, startY, rc.right - rc.left, rc.bottom - rc.top, true);
+}
+
+template <typename T>
+inline T Clamp(T value, T min, T max)
+{
+	if (value > max) return max;
+	else if (value < min) return min;
+	return value;
+}

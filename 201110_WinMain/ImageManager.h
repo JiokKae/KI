@@ -14,7 +14,7 @@ public:
 	void Release();
 
 	Image* AddImage(string strKey, const char* fileName, int width, int height, bool isTrans = false, COLORREF transColor = 0UL);
-	Image* AddImage(string strKey, const char* fileName, int width, int height, int maxFrameX, int maxFrameY, bool isTrans, COLORREF transColor);
+	Image* AddImage(string strKey, const char* fileName, int width, int height, int maxFrameX, int maxFrameY, bool isTrans = false, COLORREF transColor = 0UL);
 
 	void DeleteImage(string strKey);
 	Image* FindImage(string strKey);

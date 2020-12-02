@@ -1,7 +1,5 @@
 #include "GameNode.h"
 
-
-
 HRESULT GameNode::Init()
 {
 	//return S_OK;

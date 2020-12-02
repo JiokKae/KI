@@ -25,6 +25,7 @@ void MissileManager::Release()
 		delete (*itMissiles);
 	}
 	vecMissiles.clear();
+	ReleaseSingleton();
 }
 
 void MissileManager::Update()

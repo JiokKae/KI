@@ -26,6 +26,7 @@ void SoundManager::Release()
 
 	system->close();
 	system->release();
+	ReleaseSingleton();
 }
 
 void SoundManager::Update()

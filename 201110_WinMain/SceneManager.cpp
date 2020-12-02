@@ -14,6 +14,37 @@ HRESULT SceneManager::Init()
 
 void SceneManager::Release()
 {
+	map<string, GameNode*>::iterator it;
+	for (it = mapSceneData.begin(); it != mapSceneData.end(); )
+	{
+		if (it->second)
+		{
+			(it->second)->Release();
+			delete (it->second);
+			it = mapSceneData.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+	mapSceneData.clear();
+
+	for (it = mapLoadingSceneData.begin(); it != mapLoadingSceneData.end(); )
+	{
+		if (it->second)
+		{
+			(it->second)->Release();
+			delete (it->second);
+			it = mapLoadingSceneData.erase(it);
+		}
+		else
+		{
+			it++;
+		}
+	}
+	mapLoadingSceneData.clear();
+	ReleaseSingleton();
 }
 
 void SceneManager::Update()

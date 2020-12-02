@@ -4,7 +4,7 @@
 #include "TitleScene.h"
 #include "BattleScene.h"
 #include "LoadingScene1.h"
-
+#include "TileMapToolScene.h"
 HRESULT MainGame::Init()
 {
 	MissileManager::GetSingleton()->Init();
@@ -16,27 +16,28 @@ HRESULT MainGame::Init()
 
 	hdc = GetDC(g_hWnd);
 
-	// 이미지를 미리 로드한다
+	// 이미지 추가
 	ImageManager::GetSingleton()->AddImage("UFO", "Image/ufo.bmp", 530*2, 64*2, 10, 2, true, RGB(255, 0, 255));
 	ImageManager::GetSingleton()->AddImage("Missile1", "Image/구슬.bmp", 30, 30, true, RGB(255, 0, 255));
 	ImageManager::GetSingleton()->AddImage("Missile2", "Image/bullet.bmp", 30, 30, true, RGB(255, 0, 255));
 	ImageManager::GetSingleton()->AddImage("BackGround", "Image/backGround.bmp", WINSIZE_X, WINSIZE_Y);
 	ImageManager::GetSingleton()->AddImage("Rocket", "Image/rocket.bmp", 52, 64, true, RGB(255, 0, 255));
 
-	titleScene = new TitleScene();
-	battleScene = new BattleScene();
-	loadingScene1 = new LoadingScene1();
-	SceneManager::GetSingleton()->AddScene("Title Scene", titleScene);
-	SceneManager::GetSingleton()->AddScene("Battle Scene", battleScene);
-	SceneManager::GetSingleton()->AddLoadingScene("Loading Scene 1", loadingScene1);
+	// 씬 추가
+	SceneManager::GetSingleton()->AddScene("TitleScene", new TitleScene());
+	SceneManager::GetSingleton()->AddScene("BattleScene", new BattleScene());
+	SceneManager::GetSingleton()->AddScene("TileMapToolScene", new TileMapToolScene());
+	SceneManager::GetSingleton()->AddLoadingScene("LoadingScene1", new LoadingScene1());
+	
 
+	// 사운드 추가
 	SoundManager::GetSingleton()->AddSound("챠우챠우", "Sound/챠우챠우.mp3", true, true);
-	SoundManager::GetSingleton()->AddSound("Dark Waltz", "Sound/Dark Waltz.mp3", true, true);
+	SoundManager::GetSingleton()->AddSound("DarkWaltz", "Sound/Dark Waltz.mp3", true, true);
 
-	SceneManager::GetSingleton()->ChangeScene("Title Scene");
+	SceneManager::GetSingleton()->ChangeScene("TileMapToolScene");
 	
 	backBuffer = new Image();
-	backBuffer->Init(WINSIZE_X, WINSIZE_Y);
+	backBuffer->Init(max(WINSIZE_X, WINSIZE_TILE_MAP_X), max(WINSIZE_Y, WINSIZE_TILE_MAP_Y));
 
 	backGround = ImageManager::GetSingleton()->FindImage("BackGround");
 
@@ -48,8 +49,8 @@ void MainGame::Release()
 {
 	SAFE_RELEASE(backBuffer);
 
-	SoundManager::GetSingleton()->Release();
 	SceneManager::GetSingleton()->Release();
+	SoundManager::GetSingleton()->Release();
 	MissileManager::GetSingleton()->Release();
 	ImageManager::GetSingleton()->Release();
 	TimerManager::GetSingleton()->Release();
