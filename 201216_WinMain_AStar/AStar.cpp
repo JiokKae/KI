@@ -349,12 +349,12 @@ bool AStarTile::Open(AStarTile* parent, AStarTile* goal, Image* parentImage, int
 		newCostFromStart = parent->GetCostFromStart() + 14;
 
 	newCostToGoal = (abs(goal->GetIndex().x - idX) + abs(goal->GetIndex().y - idY)) * 10;
-	newCostToGoal *= newCostToGoal;
+	//newCostToGoal *= newCostToGoal;
 
 	newTotalCost = newCostFromStart + newCostToGoal;
 	
-	if (isClosed)
-		return false;
+	//if (isClosed)
+	//	return false;
 	// 새로운 코스트가 기존의 코스트보다 크면 탈출; (골이여야댐)
 	//if (isOpened && costToGoal < newCostToGoal)
 	if (isOpened && totalCost < newTotalCost)
