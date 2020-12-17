@@ -26,7 +26,8 @@ HRESULT AStar::Init()
 	destTile->SetColor(RGB(255, 255, 0));
 
 	currTile = startTile;
-
+	findRoot = nullptr;
+	findRoot2 = nullptr;
 	return S_OK;
 }
 
@@ -114,60 +115,17 @@ void AStar::Render(HDC hdc)
 	}
 
 	char text[50];
-	wsprintf(text, "커렌");
-	TextOut(hdc, currTile->GetIndex().x * TILE_WIDTH, currTile->GetIndex().y * TILE_HEIGHT, text, strlen(text));
+	wsprintf(text, "C");
+	TextOut(hdc, currTile->GetIndex().x * TILE_WIDTH + TILE_WIDTH - 10, currTile->GetIndex().y * TILE_HEIGHT, text, strlen(text));
 }
 
 bool AStar::FindPath()
 {
-	this->Init();
-
-	openList.clear();
-	openList.push_back(startTile);
-	while (currTile != destTile)
+	for (int i = 0; findRoot != startTile || findRoot2 != startTile; i++)
 	{
-		// 실패
-		if (openList.empty()) return false;
-
-		list<AStarTile*>::iterator it;
-		list<AStarTile*>::iterator MinIt;
-		float MinTotalCost = FLT_MAX;
-
-		// 가장 작은 노드 찾기
-		for (it = openList.begin(); it != openList.end(); it++)
-		{
-			if (MinTotalCost > (*it)->GetTotalCost())
-			{
-				MinTotalCost = (*it)->GetTotalCost();
-				MinIt = it;
-			}
-		}
-
-		currTile = *MinIt;
-		currTile->SetClosed(true);
-		if (currTile != startTile && currTile != destTile)
-			currTile->SetColor(RGB(50, 50, 50));
-		openList.erase(MinIt);
-
-		// 주변 
-		for (int y = currTile->GetIndex().y - 1; y <= currTile->GetIndex().y + 1; y++)
-		{
-			for (int x = currTile->GetIndex().x - 1; x <= currTile->GetIndex().x + 1; x++)
-			{
-				AStarTile* tile = &map[y][x];
-				if (IsMapIn({ x, y }) && tile->IsClosed() == false && tile->IsPassable() && tile->IsOpened() == false)
-				{
-					tile->Open(currTile, destTile,ImageManager::GetSingleton()->FindImage("parent"),0,0);
-					if (tile != startTile && tile != destTile)
-						tile->SetColor(RGB(255, 255, 255));
-					tile->SetOpened(true);
-					openList.push_back(tile);
-				}
-			}
-		}
+		FindPathOneStep();
 	}
 
-	// 성공
 	return true;
 }
 
@@ -191,8 +149,35 @@ void AStar::FindPathOneStep()
 		openList.push_back(startTile);
 	}
 	// 만약 도착했다면 부모를 타고가 루트를 찾는다.
- 	if (currTile == destTile)
+	if (currTile == destTile)
 	{
+		if (findRoot == startTile && findRoot2 != startTile)
+		{
+			float minCost = FLT_MAX;
+			AStarTile* minTile = nullptr;
+
+			// 주변 타일중 가장 작은 스타트로부터의 거리의 노드를 찾는다.
+			for (int y = findRoot2->GetIndex().y - 1; y <= findRoot2->GetIndex().y + 1; y++)
+			{
+				for (int x = findRoot2->GetIndex().x - 1; x <= findRoot2->GetIndex().x + 1; x++)
+				{
+					AStarTile* tile = &map[y][x];
+					if (IsMapIn({ x, y }) && tile->IsPassable() && tile->IsOpened())
+					{
+						if (minCost > tile->GetCostFromStart())
+						{
+							minCost = tile->GetCostFromStart();
+							minTile = tile;
+						}
+					}
+				}
+			}
+
+			findRoot2 = minTile;
+			if (findRoot2 != startTile)
+				findRoot2->SetColor(RGB(255, 255, 0));
+		}
+
 		if (findRoot == startTile)
 			return;
 
@@ -220,8 +205,9 @@ void AStar::FindPathOneStep()
 			MinIt = it;
 		}
 	}
-
+ 
  	currTile = *MinIt; 
+	currTile->SetOpened(true);
 	currTile->SetClosed(true);
 	if(currTile != startTile && currTile != destTile)
 		currTile->SetColor(RGB(50, 50, 50));
@@ -233,18 +219,23 @@ void AStar::FindPathOneStep()
 		for (int x = currTile->GetIndex().x - 1; x <= currTile->GetIndex().x + 1; x++)
 		{
 			AStarTile* tile = &map[y][x];
-			if (IsMapIn({ x, y }) && tile->IsPassable())
+			if (IsMapIn({ x, y }) && tile->IsPassable() && tile != startTile)
 			{
-				if (bool result = tile->Open(currTile, destTile, ImageManager::GetSingleton()->FindImage("parent"), x + 1 - currTile->GetIndex().x, y + 1 - currTile->GetIndex().y))
+				if (tile->IsOpened() && !tile->IsClosed())
 				{
-					if (tile->IsOpened() == false && tile->IsClosed() == false)
+					tile->Open(currTile, destTile, ImageManager::GetSingleton()->FindImage("parent"), x + 1 - currTile->GetIndex().x, y + 1 - currTile->GetIndex().y);
+				}
+				else
+				{
+					if (bool result = tile->Open(currTile, destTile, ImageManager::GetSingleton()->FindImage("parent"), x + 1 - currTile->GetIndex().x, y + 1 - currTile->GetIndex().y))
 					{
-						tile->SetOpened(true);
 						if (tile != startTile && tile != destTile)
 							tile->SetColor(RGB(255, 255, 255));
+
 						openList.push_back(tile);
-					}		
+					}
 				}
+				
 			}
 		}
 	}
@@ -253,6 +244,7 @@ void AStar::FindPathOneStep()
 	if (currTile == destTile)
 	{
 		findRoot = destTile;
+		findRoot2 = destTile;
 	}
 
 	// 성공
@@ -313,7 +305,7 @@ void AStarTile::Render(HDC hdc)
 	if (0 && totalCost != 0)
 	{
 		char str[50];
-		wsprintf(str, "%d", int(totalCost));
+		wsprintf(str, "%d", int(costFromStart));
 		TextOut(hdc, rc.left, rc.top, str, strlen(str));
 	}
 }
@@ -342,6 +334,7 @@ bool AStarTile::Open(AStarTile* parent, AStarTile* goal, Image* parentImage, int
 	float newCostFromStart;
 	float newCostToGoal;
 	float newTotalCost;
+	bool reval = false;
 
 	if (abs(parent->GetIndex().x - idX) + abs(parent->GetIndex().y - idY) == 1)
 		newCostFromStart = parent->GetCostFromStart() + 10;
@@ -360,15 +353,38 @@ bool AStarTile::Open(AStarTile* parent, AStarTile* goal, Image* parentImage, int
 	if (isOpened && totalCost < newTotalCost)
 		return false;
 
-	this->costFromStart = newCostFromStart;
+	if (this->isClosed)
+	{
+		if (this->costFromStart > newCostFromStart)
+		{
+			this->costFromStart = newCostFromStart;
+			this->isClosed = false;
+			reval = true;
+		}
+	}
+	else if (this->isOpened)
+	{
+		if (this->costFromStart > newCostFromStart)
+		{
+			this->costFromStart = newCostFromStart;
+			reval = false;
+		}
+	}
+	else
+	{
+		this->costFromStart = newCostFromStart;
+		reval = true;
+	}
+
 	this->costToGoal = newCostToGoal;
 	this->totalCost = newTotalCost;
 	this->parentTile = parent;
 	this->parentImage = parentImage;
 	this->currFrame.x = currFrameX;
 	this->currFrame.y = currFrameY;
-
-	return true;
+ 	this->isOpened = true;
+	
+	return reval;
 }
 
 void AStarTile::UnOpen()

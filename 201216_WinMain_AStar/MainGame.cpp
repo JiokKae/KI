@@ -3,6 +3,7 @@
 #include "TitleScene.h"
 #include "BattleScene.h"
 #include "TileMapToolScene.h"
+#include "PixelCollisionScene.h"
 #include "AStar.h"
 
 HRESULT MainGame::Init()
@@ -16,8 +17,9 @@ HRESULT MainGame::Init()
 	SceneManager::GetSingleton()->AddScene("전투", new BattleScene());
 	SceneManager::GetSingleton()->AddScene("맵툴", new TileMapToolScene());
 	SceneManager::GetSingleton()->AddScene("에이스타", new AStar());
+	SceneManager::GetSingleton()->AddScene("픽셀충돌확인", new PixelCollisionScene());
 
-	SceneManager::GetSingleton()->ChangeScene("에이스타");
+	SceneManager::GetSingleton()->ChangeScene("픽셀충돌확인");
 
 	hdc = GetDC(g_hWnd);
 

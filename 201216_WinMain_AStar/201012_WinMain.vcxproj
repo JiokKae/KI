@@ -137,6 +137,8 @@
     <ClCompile Include="MainGame.cpp" />
     <ClCompile Include="Missile.cpp" />
     <ClCompile Include="MissileManager.cpp" />
+    <ClCompile Include="NoticeManager.cpp" />
+    <ClCompile Include="PixelCollisionScene.cpp" />
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="SoundManager.cpp" />
     <ClCompile Include="SpaceShip.cpp" />
@@ -162,7 +164,9 @@
     <ClInclude Include="MainGame.h" />
     <ClInclude Include="Missile.h" />
     <ClInclude Include="MissileManager.h" />
+    <ClInclude Include="NoticeManager.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PixelCollisionScene.h" />
     <ClInclude Include="SceneManager.h" />
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="SoundManager.h" />

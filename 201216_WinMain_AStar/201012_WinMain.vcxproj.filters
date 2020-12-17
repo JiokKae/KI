@@ -117,6 +117,12 @@
     <ClCompile Include="AStar.cpp">
       <Filter>MainGame\AStar</Filter>
     </ClCompile>
+    <ClCompile Include="NoticeManager.cpp">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClCompile>
+    <ClCompile Include="PixelCollisionScene.cpp">
+      <Filter>MainGame\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h">
@@ -193,6 +199,12 @@
     </ClInclude>
     <ClInclude Include="AStar.h">
       <Filter>MainGame\AStar</Filter>
+    </ClInclude>
+    <ClInclude Include="NoticeManager.h">
+      <Filter>2DFrameWork\Manager</Filter>
+    </ClInclude>
+    <ClInclude Include="PixelCollisionScene.h">
+      <Filter>MainGame\Scene</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

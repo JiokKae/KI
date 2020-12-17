@@ -70,6 +70,7 @@ private:
 	AStarTile* destTile;
 	AStarTile* currTile;
 	AStarTile* findRoot;
+	AStarTile* findRoot2;
 
 	bool setPassableValue;
 

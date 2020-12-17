@@ -6,7 +6,7 @@
 #include <vector>
 #include <list>
 #include <map>
-
+#include <deque>
 using namespace std;
 
 #include "KeyManager.h"
