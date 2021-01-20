@@ -76,6 +76,9 @@
     <ClCompile Include="Matrix.cpp">
       <Filter>3DFrameWork</Filter>
     </ClCompile>
+    <ClCompile Include="Test3DScene.cpp">
+      <Filter>MainGame\Scene</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameNode.h">
@@ -156,6 +159,9 @@
     <ClInclude Include="Matrix.h">
       <Filter>3DFrameWork</Filter>
     </ClInclude>
+    <ClInclude Include="Test3DScene.h">
+      <Filter>MainGame\Scene</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="2DFrameWork">
@@ -197,5 +203,8 @@
     <Filter Include="3DFrameWork">
       <UniqueIdentifier>{415bbd8a-65d4-4a3d-ba31-1509a970a57b}</UniqueIdentifier>
     </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="NatvisFile.natvis" />
   </ItemGroup>
 </Project>

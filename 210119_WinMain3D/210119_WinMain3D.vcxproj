@@ -143,6 +143,7 @@
     <ClCompile Include="SceneManager.cpp" />
     <ClCompile Include="Ship.cpp" />
     <ClCompile Include="SoundManager.cpp" />
+    <ClCompile Include="Test3DScene.cpp" />
     <ClCompile Include="TileMapToolScene.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="TimerManager.cpp" />
@@ -171,11 +172,15 @@
     <ClInclude Include="Singleton.h" />
     <ClInclude Include="Ship.h" />
     <ClInclude Include="SoundManager.h" />
+    <ClInclude Include="Test3DScene.h" />
     <ClInclude Include="TileMapToolScene.h" />
     <ClInclude Include="Timer.h" />
     <ClInclude Include="TimerManager.h" />
     <ClInclude Include="TitleScene.h" />
     <ClInclude Include="Vector3.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Natvis Include="NatvisFile.natvis" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

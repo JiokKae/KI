@@ -13,10 +13,11 @@ using namespace std;
 #include "TimerManager.h"
 #include "SoundManager.h"
 
-#define WINSIZE_X	600
-#define WINSIZE_Y	800
+#define WINSIZE_X	1600
+#define WINSIZE_Y	900
 #define WINSIZE_TILE_MAP_X	1600
 #define WINSIZE_TILE_MAP_Y	900
+#define EPSILON		0.00001f
 #define PI			3.141592f
 #define RADIAN(x)	(x * PI / 180.0f)
 #define DEGREE(x)	(x * 180.0f / PI)

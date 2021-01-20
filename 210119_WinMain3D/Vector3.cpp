@@ -1,8 +1,6 @@
 #include "Vector3.h"
 #include <cmath>
 
-#define EPSILON		0.00001
-
 bool Vector3::operator==(Vector3& vec)
 {
 	return fabs(x - vec.x) < EPSILON && fabs(y - vec.y) < EPSILON && fabs(z - vec.z) < EPSILON;

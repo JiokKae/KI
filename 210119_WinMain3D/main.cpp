@@ -78,23 +78,24 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT iMessage,
 int APIENTRY WinMain(HINSTANCE _hInstance, HINSTANCE _hPrevInstance,
 	LPSTR _lpszCmdParam, int nCmdShow)
 {
-	Matrix mat1(2);
-	mat1[0][0] = 4;
-	mat1[0][1] = 1;
-	mat1[1][0] = -2;
-	mat1[1][1] = 1;
+	Matrix mat1 = {
+		{  4, 1, },
+		{ -2, 1, },
+	};
 
-	Matrix mat2(2);
-	mat2[0][0] = 1;
-	mat2[0][1] = 3;
-	mat2[1][0] = 2;
-	mat2[1][1] = 1;
+	Matrix mat2 = {
+		{ 1, 3, },
+		{ 2, 1, },
+	};
 
 	Matrix mat3(2);
 	mat3 = mat1 * mat2;
 
 	Matrix mat4(2);
 	mat4 = mat3.Transpose();
+	
+	Matrix mat5(3);
+	mat5.SetRandom();
 
 #pragma region VectorTest
 	Vector3 v1;

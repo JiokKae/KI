@@ -5,6 +5,7 @@
 #include "BattleScene.h"
 #include "LoadingScene1.h"
 #include "TileMapToolScene.h"
+#include "Test3DScene.h"
 HRESULT MainGame::Init()
 {
 	MissileManager::GetSingleton()->Init();
@@ -28,13 +29,14 @@ HRESULT MainGame::Init()
 	SceneManager::GetSingleton()->AddScene("BattleScene", new BattleScene());
 	SceneManager::GetSingleton()->AddScene("TileMapToolScene", new TileMapToolScene());
 	SceneManager::GetSingleton()->AddLoadingScene("LoadingScene1", new LoadingScene1());
+	SceneManager::GetSingleton()->AddScene("3D Å×½ºÆ®", new Test3DScene());
 	
 
 	// »ç¿îµå Ãß°¡
 	SoundManager::GetSingleton()->AddSound("Ã­¿ìÃ­¿ì", "Sound/Ã­¿ìÃ­¿ì.mp3", true, true);
 	SoundManager::GetSingleton()->AddSound("DarkWaltz", "Sound/Dark Waltz.mp3", true, true);
 
-	SceneManager::GetSingleton()->ChangeScene("TileMapToolScene");
+	SceneManager::GetSingleton()->ChangeScene("3D Å×½ºÆ®");
 	
 	backBuffer = new Image();
 	backBuffer->Init(max(WINSIZE_X, WINSIZE_TILE_MAP_X), max(WINSIZE_Y, WINSIZE_TILE_MAP_Y));
@@ -75,6 +77,7 @@ void MainGame::Render()
 
 	char szText[128];
 
+	/*
 	wsprintf(szText, "X : %d, Y : %d", g_ptMouse.x, g_ptMouse.y);
 	TextOut(backDC, 10, 5, szText, strlen(szText));
 
@@ -83,6 +86,7 @@ void MainGame::Render()
 
 	wsprintf(szText, "g_time : %d", (int)g_time);
 	TextOut(backDC, WINSIZE_X - 300, 0, szText, strlen(szText));
+	*/
 
 	TimerManager::GetSingleton()->Render(backDC);
 
