@@ -1,4 +1,5 @@
 #include "Matrix.h"
+#include "Vector3.h"
 
 Matrix::Row::Row()
 {
@@ -91,9 +92,9 @@ Matrix Matrix::operator-(Matrix& mat)
 	return ret;
 }
 
-Matrix Matrix::operator*(Matrix& mat)
+Matrix Matrix::operator *(Matrix& mat)
 {
-	Matrix ret(vecData.size());
+	Matrix ret(vecData.size(), vecData[0].size());
 	for (int i = 0; i < vecData.size(); i++)
 	{
 		for (int j = 0; j < mat[i].size(); j++)
@@ -212,6 +213,125 @@ float Matrix::Determinent()
 	return det;
 }
 
+Matrix Matrix::Identity(int dimension)
+{
+	Matrix ret(dimension);
+	for (int i = 0; i < dimension; i++)
+		ret[i][i] = 1;
+
+	return ret;
+}
+
+Matrix Matrix::Translation(float x, float y, float z)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[3][0] = x;
+	ret[3][1] = y;
+	ret[3][2] = z;
+
+	return ret;
+}
+
+Matrix Matrix::RotationX(float angle)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[1][1] = ret[2][2] = cos(RADIAN(angle));
+	ret[1][2] = sin(RADIAN(angle));
+	ret[2][1] = -sin(RADIAN(angle));
+
+	return ret;
+}
+
+Matrix Matrix::RotationY(float angle)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[0][0] = ret[2][2] = cos(RADIAN(angle));
+	ret[0][2] = -sin(RADIAN(angle));
+	ret[2][0] = sin(RADIAN(angle));
+
+	return ret;
+}
+
+Matrix Matrix::RotationZ(float angle)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[0][0] = ret[1][1] = cos(RADIAN(angle));
+	ret[0][1] = sin(RADIAN(angle));
+	ret[1][0] = -sin(RADIAN(angle));
+
+	return ret;
+}
+
+Matrix Matrix::Scaling(float x, float y, float z)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[0][0] = x;
+	ret[1][1] = y;
+	ret[2][2] = z;
+
+	return ret;
+}
+
+Matrix Matrix::View(Vector3& eye, Vector3& lookat, Vector3& up)
+{
+	Vector3 camX, camY, camZ;
+	camZ = Vector3(lookat - eye).Normalize();
+	camX = Vector3::Cross(up, camZ).Normalize();
+	camY = Vector3::Cross(camZ, camX).Normalize();
+
+	Matrix ret = Matrix::Identity(4);
+	ret[0][0] = camX.x;	ret[0][1] = camY.x;	ret[0][2] = camZ.x;
+	ret[1][0] = camX.y;	ret[1][1] = camY.y;	ret[1][2] = camZ.y;
+	ret[2][0] = camX.z;	ret[2][1] = camY.z;	ret[2][2] = camZ.z;
+	ret[3][0] = -Vector3::Dot(camX, eye);
+	ret[3][1] = -Vector3::Dot(camY, eye);
+	ret[3][2] = -Vector3::Dot(camZ, eye);
+
+	return ret;
+}
+
+Matrix Matrix::Projection(float fovY, float aspect, float nearZ, float farZ)
+{
+	Matrix ret = Matrix::Identity(4);
+
+	float h = 1.0f / tanf(fovY / 2.0f);
+	float w = h / aspect;
+
+	ret[0][0] = w;
+	ret[1][1] = h;
+	ret[2][2] = farZ / (farZ - nearZ);
+	ret[3][2] = (-nearZ * farZ) / (farZ - nearZ);
+	ret[2][3] = 1.0f;
+	ret[3][3] = 0.0f;
+
+	return ret;
+
+	float const tanHalfFovY = tan(fovY / 2.0f);
+
+	Matrix Result(4);
+	Result[0][0] = 1.0f / (aspect * tanHalfFovY);
+	Result[1][1] = 1.0f / (tanHalfFovY);
+	Result[2][3] = 1.0f;
+
+	Result[2][2] = farZ / (farZ - nearZ);
+	Result[3][2] = -(farZ * nearZ) / (farZ - nearZ);
+
+	return Result;
+}
+
+Matrix Matrix::Viewport(float x, float y, float w, float h, float minZ, float maxZ)
+{
+	Matrix ret = Matrix::Identity(4);
+	ret[0][0] = w / 2.0f;
+	ret[1][1] = -h / 2.0f;
+	ret[2][2] = maxZ - minZ;
+	ret[3][0] = x + w / 2.0f;
+	ret[3][1] = y + h / 2.0f;
+	ret[3][2] = minZ;
+
+	return ret;
+}
+
 void Matrix::Resize(int dimension)
 {
 	vecData.resize(dimension);
@@ -231,6 +351,15 @@ Matrix::Matrix(int dimension)
 	for (Row& row : vecData)
 	{
 		row.Resize(dimension);
+	}
+}
+
+Matrix::Matrix(int row, int col)
+{
+	vecData.resize(row);
+	for (Row& row : vecData)
+	{
+		row.Resize(col);
 	}
 }
 

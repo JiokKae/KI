@@ -19,6 +19,7 @@ HWND		g_hWnd;				// 윈도우 핸들
 LPSTR		g_lpszClass = (LPSTR)TEXT("윈메인의 시작");
 MainGame	g_mainGame;
 float		g_time;
+float		g_mousezDelta;
 POINT		g_ptMouse;
 
 void MakeRectangle(HDC hdc, int x, int y, int size);

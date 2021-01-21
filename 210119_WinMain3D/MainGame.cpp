@@ -108,6 +108,10 @@ LRESULT MainGame::MainProc(HWND hWnd, UINT iMessage, WPARAM wParam, LPARAM lPara
 		mouseData.clickedPosY = HIWORD(lParam);
 		break;
 
+	case WM_MOUSEWHEEL:
+		g_mousezDelta += GET_WHEEL_DELTA_WPARAM(wParam);
+		break;
+
 	case WM_DESTROY:
 		PostQuitMessage(0);
 		break;

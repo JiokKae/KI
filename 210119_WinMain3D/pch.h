@@ -54,10 +54,11 @@ struct Argument2 {
 };
 
 
-extern HWND g_hWnd;
-extern HINSTANCE g_hInstance;
-extern float g_time;
-extern POINT g_ptMouse;
+extern HWND			g_hWnd;
+extern HINSTANCE	g_hInstance;
+extern float		g_time;
+extern float		g_mousezDelta;
+extern POINT		g_ptMouse;
 
 inline void SetWindowSize(int startX, int startY, int sizeX, int sizeY)
 {
@@ -81,4 +82,26 @@ inline T Clamp(T value, T min, T max)
 	if (value > max) return max;
 	else if (value < min) return min;
 	return value;
+}
+
+inline RECT GetWindowRect()
+{
+	RECT rc;
+	POINT lt, rb;
+	GetClientRect(g_hWnd, &rc);
+	// 클라이언트 크기를 받아옴
+	lt.x = rc.left;
+	lt.y = rc.top;
+	rb.x = rc.right;
+	rb.y = rc.bottom;
+	// 받아온 클라이언트 크기를좌표로 입력
+	ClientToScreen(g_hWnd, &lt);
+	ClientToScreen(g_hWnd, &rb);
+	// 클라이언트 내 좌표를 윈도우상 좌표로 변환
+	rc.left = lt.x;
+	rc.top = lt.y;
+	rc.right = rb.x;
+	rc.bottom = rb.y;
+
+	return rc;
 }

@@ -79,6 +79,7 @@
     <ClCompile Include="Test3DScene.cpp">
       <Filter>MainGame\Scene</Filter>
     </ClCompile>
+    <ClCompile Include="FreeCamera.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameNode.h">
@@ -162,6 +163,7 @@
     <ClInclude Include="Test3DScene.h">
       <Filter>MainGame\Scene</Filter>
     </ClInclude>
+    <ClInclude Include="FreeCamera.h" />
   </ItemGroup>
   <ItemGroup>
     <Filter Include="2DFrameWork">
