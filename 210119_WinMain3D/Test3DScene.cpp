@@ -254,9 +254,9 @@ void Test3DScene::Render(HDC hdc)
 {
     PatBlt(hdc, 0, 0, WINSIZE_X, WINSIZE_Y, WHITENESS);
 
-    Matrix matWVP = matWorld * matView * matProj * matViewport;
+    Matrix matWVP = matWorld * matView * matProj;// * matViewport;
     Matrix matVPV = matView * matProj * matViewport;
-
+    Matrix matPV = matProj * matViewport;
     {
         HPEN old = (HPEN)SelectObject(hdc, CreatePen(PS_SOLID, 3, RGB(255, 0, 0)));
 
@@ -294,7 +294,7 @@ void Test3DScene::Render(HDC hdc)
         DeleteObject(SelectObject(hdc, old3));
     }
 
-    for (int boxI = 0; boxI < 5; boxI++)
+    for (int boxI = 0; boxI < 1; boxI++)
     {
         Vector3 v1, v2, v3;
         for (int i = 0; i < vecIndex.size(); i += 3)
@@ -303,11 +303,15 @@ void Test3DScene::Render(HDC hdc)
             v2 = Vector3::TransformCoord(vecVertexs[vecIndex[i + 1]] +  Vector3(0.0f, 0.0f, -2.5f) * boxI, matWVP);
             v3 = Vector3::TransformCoord(vecVertexs[vecIndex[i + 2]] +  Vector3(0.0f, 0.0f, -2.5f) * boxI, matWVP);
 
-            if (Vector3::Dot(Vector3::Cross(v2 - v1, v3 - v1), camera->GerFront()) > 0)
+            if (Vector3::Dot(Vector3::Cross(v2 - v1, v3 - v1), Vector3(0.0f, 0.0f, 1.0f)) > 0)
                 continue;
             // 뷰스페이스 행렬 변환
             // 투영
             // 뷰포트
+
+            v1 = Vector3::TransformCoord(v1, matViewport);
+            v2 = Vector3::TransformCoord(v2, matViewport);
+            v3 = Vector3::TransformCoord(v3, matViewport);
 
             if (i == 6 || i == 9)
             {
